@@ -71,7 +71,7 @@ novos_tipos {letter}+DataType
 ":"                return SIMBOLO;
 
 .                   { 
-                      cerr << "Caracter desconhecido: " << yytext << " na linha " << yylineno << endl; 
+                      cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
                       return NAO_IDENTIFICADO;
                    }
 %%

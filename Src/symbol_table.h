@@ -18,8 +18,8 @@ struct Symbol {
 
 class SymbolTable {
 public:
-    void addSymbol(const string& name, Token type);
-    Token getType(const string& name) const;
+    void addSymbol(const string& name, int token, int line);
+    const Symbol* getSymbol(const string& name) const;
 
 private:
     unordered_map<string, Symbol> symbols;
