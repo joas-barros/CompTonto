@@ -40,9 +40,12 @@ void SymbolTable::exportJson() const {
         }
         first = false;
         const Symbol& sym = pair.second;
+
+        const string tokenStr = tokenToString(static_cast<Token>(sym.token));
+
         fout << "    {\n";
         fout << "      \"name\": \"" << sym.name << "\",\n";
-        fout << "      \"token\": " << sym.token << ",\n";
+        fout << "      \"token\": \"" << tokenStr << "\",\n";
         fout << "      \"lines\": [";
         for (size_t i = 0; i < sym.lines.size(); ++i) {
             if (i > 0) fout << ", ";

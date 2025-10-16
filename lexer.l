@@ -31,7 +31,7 @@ esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|h
 
 esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
 
-palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import
+palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes
 
 dados_nativos number|string|boolean|date|time|datetime
 
@@ -51,116 +51,117 @@ novos_tipos {letter}+DataType
 
 {number}             {
                       symbolTable.addSymbol(yytext, NUMERO, yylineno);
-                      return NUMERO; 
+                      //return NUMERO; 
                      }
 
 {palavras_reservadas} {
                         cont_palavras_reservadas++;
                       symbolTable.addSymbol(yytext, PALAVRA_RESERVADA, yylineno);
-                      return PALAVRA_RESERVADA;
+                      //return PALAVRA_RESERVADA;
                      }
 
 {dados_nativos}     {
                       symbolTable.addSymbol(yytext, DADO_NATIVO, yylineno);
-                      return DADO_NATIVO;
+                      //return DADO_NATIVO;
                     }
 
 {meta_atributos}    {
                         cont_meta_atributos++;
                       symbolTable.addSymbol(yytext, META_ATRIBUTO, yylineno);
-                      return META_ATRIBUTO;
+                      //return META_ATRIBUTO;
                     }
 
 {esteriotipo_classe} {
                       symbolTable.addSymbol(yytext, ESTERIOTIPO_CLASSE, yylineno);
-                      return ESTERIOTIPO_CLASSE;
+                      //return ESTERIOTIPO_CLASSE;
                     }
 
 {esteriotipo_relacao} {
                       symbolTable.addSymbol(yytext, ESTERIOTIPO_RELACAO, yylineno);
-                      return ESTERIOTIPO_RELACAO;
+                      //return ESTERIOTIPO_RELACAO;
                     }
 
 {novos_tipos}       {
                       symbolTable.addSymbol(yytext, NOVO_TIPO, yylineno);
-                      return NOVO_TIPO;
+                      //return NOVO_TIPO;
                     }
 
 {nome_de_classe}    {
                       cont_classes++;
                       symbolTable.addSymbol(yytext, NOME_DE_CLASSE, yylineno);
-                      return NOME_DE_CLASSE;
+                      //return NOME_DE_CLASSE;
                     }
 
 {nome_de_relacao}   {
                       cont_relacoes++;
                       symbolTable.addSymbol(yytext, NOME_DE_RELACAO, yylineno);
-                      return NOME_DE_RELACAO;
+                      //return NOME_DE_RELACAO;
                     }
 
 {instancias}        {
                         cont_individuos++;
                       symbolTable.addSymbol(yytext, INSTANCIA, yylineno);
-                      return INSTANCIA;
+                      //return INSTANCIA;
                     }
 
 "{"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "}"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "("                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "["                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "]"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 ".."               {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "<>--"             {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "--<>"             {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "*"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 "@"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 ":"                {
                       symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      return SIMBOLO;
+                      //return SIMBOLO;
                     }
 
 .                   { 
                       cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
-                      return NAO_IDENTIFICADO;
+                      symbolTable.addSymbol(yytext, NAO_IDENTIFICADO, yylineno);
+                      //return NAO_IDENTIFICADO;
                    }
 %%
 
