@@ -31,7 +31,7 @@ esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|h
 
 esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
 
-palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes
+palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes|intrinsic-modes
 
 dados_nativos number|string|boolean|date|time|datetime
 
@@ -158,6 +158,16 @@ novos_tipos {letter}+DataType
                       //return SIMBOLO;
                     }
 
+","                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      //return SIMBOLO;
+                    }
+
+"--"              {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      //return SIMBOLO;
+                    }
+
 .                   { 
                       cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
                       symbolTable.addSymbol(yytext, NAO_IDENTIFICADO, yylineno);
@@ -191,6 +201,9 @@ void generateReport() {
    fout << "Número de meta-atributos: " << cont_meta_atributos << endl;
    fout << "==========================" << endl;
    fout.close();
+
+   cout << "======================ANÁLISE LEXICA CONCLUIDA COM SUCESSO!======================" << endl;
+   cout << "Relatório gerado em output/relatorio.txt" << endl;
 
     symbolTable.exportJson();
 }

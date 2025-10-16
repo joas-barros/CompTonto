@@ -57,4 +57,6 @@ void SymbolTable::exportJson() const {
     fout << "\n  ]\n";
     fout << "}\n";
     fout.close();
+
+    cout << "Tabela de símbolos exportada para output/symbol_table.json" << endl;
 }
