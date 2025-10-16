@@ -1,0 +1,9 @@
+{
+  "symbols": [
+    {
+      "name": "import",
+      "token": 4,
+      "lines": [1]
+    }
+  ]
+}

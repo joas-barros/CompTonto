@@ -25,7 +25,7 @@ const Symbol* SymbolTable::getSymbol(const string& name) const {
 void SymbolTable::exportJson() const {
     ofstream fout;
 
-    fout.open("outputs/symbol_table.json");
+    fout.open("output/symbol_table.json");
     if (!fout.is_open()) {
         cerr << "Erro ao abrir o arquivo symbol_table.json para escrita." << endl;
         return;

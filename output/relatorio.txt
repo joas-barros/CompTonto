@@ -1,0 +1,9 @@
+RELATÓRIO DE ANÁLISE LÉXICA
+==========================
+Número de classes: 0
+Número de relações: 0
+Número de palavras reservadas: 1
+Número de indivíduos: 0
+Número de palavras-chave: 0
+Número de meta-atributos: 0
+==========================
