@@ -49,135 +49,80 @@ novos_tipos {letter}+DataType
 
 {ws}                { /* ignore whitespace */ }
 
-{number}             {
-                      symbolTable.addSymbol(yytext, NUMERO, yylineno);
-                      //return NUMERO; 
-                     }
+{number}             return NUMERO;
 
-{palavras_reservadas} {
-                        cont_palavras_reservadas++;
-                      symbolTable.addSymbol(yytext, PALAVRA_RESERVADA, yylineno);
-                      //return PALAVRA_RESERVADA;
-                     }
+{palavras_reservadas} return PALAVRA_RESERVADA;
 
-{dados_nativos}     {
-                      symbolTable.addSymbol(yytext, DADO_NATIVO, yylineno);
-                      //return DADO_NATIVO;
-                    }
+{dados_nativos}     return DADO_NATIVO;
 
-{meta_atributos}    {
-                        cont_meta_atributos++;
-                      symbolTable.addSymbol(yytext, META_ATRIBUTO, yylineno);
-                      //return META_ATRIBUTO;
-                    }
+{meta_atributos}    return META_ATRIBUTO;
 
-{esteriotipo_classe} {
-                      symbolTable.addSymbol(yytext, ESTERIOTIPO_CLASSE, yylineno);
-                      //return ESTERIOTIPO_CLASSE;
-                    }
+{esteriotipo_classe} return ESTERIOTIPO_CLASSE;
 
-{esteriotipo_relacao} {
-                      symbolTable.addSymbol(yytext, ESTERIOTIPO_RELACAO, yylineno);
-                      //return ESTERIOTIPO_RELACAO;
-                    }
+{esteriotipo_relacao} return ESTERIOTIPO_RELACAO;
 
-{novos_tipos}       {
-                      symbolTable.addSymbol(yytext, NOVO_TIPO, yylineno);
-                      //return NOVO_TIPO;
-                    }
+{novos_tipos}       return NOVO_TIPO;
 
-{nome_de_classe}    {
-                      cont_classes++;
-                      symbolTable.addSymbol(yytext, NOME_DE_CLASSE, yylineno);
-                      //return NOME_DE_CLASSE;
-                    }
+{nome_de_classe}    return NOME_DE_CLASSE;
 
-{nome_de_relacao}   {
-                      cont_relacoes++;
-                      symbolTable.addSymbol(yytext, NOME_DE_RELACAO, yylineno);
-                      //return NOME_DE_RELACAO;
-                    }
+{nome_de_relacao}   return NOME_DE_RELACAO;
 
-{instancias}        {
-                        cont_individuos++;
-                      symbolTable.addSymbol(yytext, INSTANCIA, yylineno);
-                      //return INSTANCIA;
-                    }
+{instancias}        return INSTANCIA;
 
-"{"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"}"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"("                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"["                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"]"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-".."               {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"<>--"             {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"--<>"             {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"*"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"@"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-":"                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-","                {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
-
-"--"              {
-                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
-                      //return SIMBOLO;
-                    }
+"{"                return SIMBOLO;
+"}"                return SIMBOLO;
+"("                return SIMBOLO;
+"["                return SIMBOLO;
+"]"                return SIMBOLO;
+".."               return SIMBOLO;
+"<>--"             return SIMBOLO;
+"--<>"             return SIMBOLO;
+"*"                return SIMBOLO;
+"@"                return SIMBOLO;
+":"                return SIMBOLO;
+","                return SIMBOLO;
+"--"               return SIMBOLO;
 
 .                   { 
                       cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
-                      symbolTable.addSymbol(yytext, NAO_IDENTIFICADO, yylineno);
-                      //return NAO_IDENTIFICADO;
+                      return NAO_IDENTIFICADO;
                    }
 %%
 
 int main() {
    yyFlexLexer lexer;
-   lexer.yylex();
+   int lookahead;
+
+   while ((lookahead = lexer.yylex()) != 0) {
+        switch (lookahead) {
+            case PALAVRA_RESERVADA:
+                cont_palavras_reservadas++;
+                break;
+            case NOME_DE_CLASSE:
+                cont_classes++;
+                break;
+            case NOME_DE_RELACAO:
+                cont_relacoes++;
+                break;
+            case INSTANCIA:
+                cont_individuos++;
+                break;
+            case META_ATRIBUTO:
+                cont_meta_atributos++;
+                break;
+            case NOVO_TIPO:
+                cont_palavras_chave++;
+                break;
+            case NAO_IDENTIFICADO:
+                // Erro já reportado no lexer
+                break;
+            default:
+                // Outros tokens não são contabilizados
+                break;
+        }
+
+        symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno());
+   }
 
    generateReport();
    return 0;
