@@ -1,12 +1,23 @@
 %{
 #include <iostream>
-#include "token.h"
+#include <fstream>
+#include "tokens.h"
+#include "symbol_table.h"
+
 
 using namespace std;
+
+int cont_classes = 0, cont_relacoes = 0, cont_palavras_reservadas = 0, cont_individuos = 0, cont_palavras_chave = 0, cont_meta_atributos = 0;
+
+SymbolTable symbolTable;
+ofstream fout;
+
+void generateReport();
+
 %}
 
 %option noyywrap
-%option yylineo
+%option yylineno
 
 delim [ \t\n]
 ws {delim}+
@@ -38,40 +49,147 @@ novos_tipos {letter}+DataType
 
 {ws}                { /* ignore whitespace */ }
 
-{number}            return NUMERO;
+{number}             {
+                      symbolTable.addSymbol(yytext, NUMERO, yylineno);
+                      return NUMERO; 
+                     }
 
-{palavras_reservadas} return PALAVRA_RESERVADA;
+{palavras_reservadas} {
+                        cont_palavras_reservadas++;
+                      symbolTable.addSymbol(yytext, PALAVRA_RESERVADA, yylineno);
+                      return PALAVRA_RESERVADA;
+                     }
 
-{dados_nativos}     return DADO_NATIVO;
+{dados_nativos}     {
+                      symbolTable.addSymbol(yytext, DADO_NATIVO, yylineno);
+                      return DADO_NATIVO;
+                    }
 
-{meta_atributos}    return META_ATRIBUTO;
+{meta_atributos}    {
+                        cont_meta_atributos++;
+                      symbolTable.addSymbol(yytext, META_ATRIBUTO, yylineno);
+                      return META_ATRIBUTO;
+                    }
 
-{esteriotipo_classe} return ESTERIOTIPO_CLASSE;
+{esteriotipo_classe} {
+                      symbolTable.addSymbol(yytext, ESTERIOTIPO_CLASSE, yylineno);
+                      return ESTERIOTIPO_CLASSE;
+                    }
 
-{esteriotipo_relacao} return ESTERIOTIPO_RELACAO;
+{esteriotipo_relacao} {
+                      symbolTable.addSymbol(yytext, ESTERIOTIPO_RELACAO, yylineno);
+                      return ESTERIOTIPO_RELACAO;
+                    }
 
-{novos_tipos}       return NOVO_TIPO;
+{novos_tipos}       {
+                      symbolTable.addSymbol(yytext, NOVO_TIPO, yylineno);
+                      return NOVO_TIPO;
+                    }
 
-{nome_de_classe}    return NOME_DE_CLASSE;
+{nome_de_classe}    {
+                      cont_classes++;
+                      symbolTable.addSymbol(yytext, NOME_DE_CLASSE, yylineno);
+                      return NOME_DE_CLASSE;
+                    }
 
-{nome_de_relacao}   return NOME_DE_RELACAO;
+{nome_de_relacao}   {
+                      cont_relacoes++;
+                      symbolTable.addSymbol(yytext, NOME_DE_RELACAO, yylineno);
+                      return NOME_DE_RELACAO;
+                    }
 
-{instancias}        return INSTANCIA;
+{instancias}        {
+                        cont_individuos++;
+                      symbolTable.addSymbol(yytext, INSTANCIA, yylineno);
+                      return INSTANCIA;
+                    }
 
-"{"                return SIMBOLO;
-"}"                return SIMBOLO;
-"("                return SIMBOLO;
-"["                return SIMBOLO;
-"]"                return SIMBOLO;
-".."               return SIMBOLO;
-"<>--"             return SIMBOLO;
-"--<>"             return SIMBOLO;
-"*"                return SIMBOLO;
-"@"                return SIMBOLO;
-":"                return SIMBOLO;
+"{"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"}"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"("                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"["                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"]"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+".."               {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"<>--"             {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"--<>"             {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"*"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+"@"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
+
+":"                {
+                      symbolTable.addSymbol(yytext, SIMBOLO, yylineno);
+                      return SIMBOLO;
+                    }
 
 .                   { 
                       cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
                       return NAO_IDENTIFICADO;
                    }
 %%
+
+int main() {
+   yyFlexLexer lexer;
+   lexer.yylex();
+
+   generateReport();
+   return 0;
+}
+
+void generateReport() {
+   fout.open("output/relatorio.txt");
+
+   if (!fout.is_open()) {
+       cerr << "Erro ao abrir o arquivo de relatório." << endl;
+       return;
+   }
+
+   fout << "RELATÓRIO DE ANÁLISE LÉXICA" << endl;
+   fout << "==========================" << endl;
+   fout << "Número de classes: " << cont_classes << endl;
+   fout << "Número de relações: " << cont_relacoes << endl;
+   fout << "Número de palavras reservadas: " << cont_palavras_reservadas << endl;
+   fout << "Número de indivíduos: " << cont_individuos << endl;
+   fout << "Número de palavras-chave: " << cont_palavras_chave << endl;
+   fout << "Número de meta-atributos: " << cont_meta_atributos << endl;
+   fout << "==========================" << endl;
+   fout.close();
+
+    symbolTable.exportJson();
+}

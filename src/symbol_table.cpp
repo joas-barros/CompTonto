@@ -21,3 +21,37 @@ const Symbol* SymbolTable::getSymbol(const string& name) const {
         return nullptr; 
     }
 }
+
+void SymbolTable::exportJson() const {
+    ofstream fout;
+
+    fout.open("outputs/symbol_table.json");
+    if (!fout.is_open()) {
+        cerr << "Erro ao abrir o arquivo symbol_table.json para escrita." << endl;
+        return;
+    }
+
+    fout << "{\n";
+    fout << "  \"symbols\": [\n";
+    bool first = true;
+    for (const auto& pair : symbols) {
+        if (!first) {
+            fout << ",\n";
+        }
+        first = false;
+        const Symbol& sym = pair.second;
+        fout << "    {\n";
+        fout << "      \"name\": \"" << sym.name << "\",\n";
+        fout << "      \"token\": " << sym.token << ",\n";
+        fout << "      \"lines\": [";
+        for (size_t i = 0; i < sym.lines.size(); ++i) {
+            if (i > 0) fout << ", ";
+            fout << sym.lines[i];
+        }
+        fout << "]\n";
+        fout << "    }";
+    }
+    fout << "\n  ]\n";
+    fout << "}\n";
+    fout.close();
+}
