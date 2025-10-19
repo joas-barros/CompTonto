@@ -1,9 +1,9 @@
 #include "symbol_table.h"
 
-void SymbolTable::addSymbol(const string& name, int token, int line) {
+void SymbolTable::addSymbol(const string& name, int token, int line, int column) {
     auto it = symbols.find(name);
     if (it != symbols.end()) {
-        it->second.lines.push_back(line);
+        it->second.locations.push_back({line, column});
     } else {
         Symbol sym;
         sym.name = name;
@@ -43,15 +43,14 @@ void SymbolTable::exportJson() const {
 
         const string tokenStr = tokenToString(static_cast<Token>(sym.token));
 
-        fout << "    {\n";
-        fout << "      \"name\": \"" << sym.name << "\",\n";
-        fout << "      \"token\": \"" << tokenStr << "\",\n";
-        fout << "      \"lines\": [";
-        for (size_t i = 0; i < sym.lines.size(); ++i) {
+
+        fout << "      \"locations\": [";
+        for (size_t i = 0; i < sym.locations.size(); ++i) {
             if (i > 0) fout << ", ";
-            fout << sym.lines[i];
+            fout << "{\"line\": " << sym.locations[i].line << ", \"col\": " << sym.locations[i].column << "}";
         }
         fout << "]\n";
+        
         fout << "    }";
     }
     fout << "\n  ]\n";

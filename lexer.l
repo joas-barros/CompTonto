@@ -72,6 +72,7 @@ novos_tipos {letter}+DataType
 "{"                return SIMBOLO;
 "}"                return SIMBOLO;
 "("                return SIMBOLO;
+")"                return SIMBOLO;
 "["                return SIMBOLO;
 "]"                return SIMBOLO;
 ".."               return SIMBOLO;

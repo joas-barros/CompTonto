@@ -9,18 +9,23 @@
 #include "tokens.h"
 
 using namespace std;
-    
+   
+struct Location {
+    int line;
+    int column;
+};
 
 // Estruturas de dados para a tabela de símbolos
 struct Symbol {
     string name;
     int token;
-    vector<int> lines;
+    vector<Location> locations;
 };
+
 
 class SymbolTable {
 public:
-    void addSymbol(const string& name, int token, int line);
+    void addSymbol(const string& name, int token, int line, int column);
     const Symbol* getSymbol(const string& name) const;
     void exportJson() const;
 
