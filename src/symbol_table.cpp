@@ -69,7 +69,7 @@ int SymbolTable::countTokensOccurrences(int token) const {
     for (const auto& pair : symbols) {
         const Symbol& sym = pair.second;
         if (sym.token == token) {
-            count++;
+            count += sym.locations.size();
         }
     }
     return count;

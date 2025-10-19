@@ -214,33 +214,6 @@ int main() {
    int lookahead;
 
    while ((lookahead = lexer.yylex()) != 0) {
-        switch (lookahead) {
-            case PALAVRA_RESERVADA:
-                cont_palavras_reservadas++;
-                break;
-            case NOME_DE_CLASSE:
-                cont_classes++;
-                break;
-            case NOME_DE_RELACAO:
-                cont_relacoes++;
-                break;
-            case INSTANCIA:
-                cont_individuos++;
-                break;
-            case META_ATRIBUTO:
-                cont_meta_atributos++;
-                break;
-            case NOVO_TIPO:
-                cont_palavras_chave++;
-                break;
-            case NAO_IDENTIFICADO:
-                // Erro já reportado no lexer
-                break;
-            default:
-                // Outros tokens não são contabilizados
-                break;
-        }
-
         symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno(), token_start_column);
    }
 
@@ -249,26 +222,10 @@ int main() {
 }
 
 void generateReport() {
-   fout.open("output/relatorio.txt");
-
-   if (!fout.is_open()) {
-       cerr << "Erro ao abrir o arquivo de relatório." << endl;
-       return;
-   }
-
-   fout << "RELATÓRIO DE ANÁLISE LÉXICA" << endl;
-   fout << "==========================" << endl;
-   fout << "Número de classes: " << cont_classes << endl;
-   fout << "Número de relações: " << cont_relacoes << endl;
-   fout << "Número de palavras reservadas: " << cont_palavras_reservadas << endl;
-   fout << "Número de indivíduos: " << cont_individuos << endl;
-   fout << "Número de palavras-chave: " << cont_palavras_chave << endl;
-   fout << "Número de meta-atributos: " << cont_meta_atributos << endl;
-   fout << "==========================" << endl;
-   fout.close();
-
-   cout << "======================ANÁLISE LEXICA CONCLUIDA COM SUCESSO!======================" << endl;
-   cout << "Relatório gerado em output/relatorio.txt" << endl;
-
     symbolTable.exportJson();
+    symbolTable.generateReport();
+
+    cout << "===========================================" << endl;
+    cout << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << endl;
+    cout << "===========================================" << endl;
 }

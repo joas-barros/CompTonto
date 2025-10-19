@@ -1,4 +1,5 @@
 Build/*
+output/*
 !.gitkeep
 
 todo.txt

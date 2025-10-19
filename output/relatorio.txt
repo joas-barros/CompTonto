@@ -1,9 +1,0 @@
-RELATÓRIO DE ANÁLISE LÉXICA
-==========================
-Número de classes: 88
-Número de relações: 69
-Número de palavras reservadas: 31
-Número de indivíduos: 0
-Número de palavras-chave: 0
-Número de meta-atributos: 0
-==========================
