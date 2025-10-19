@@ -122,72 +122,85 @@ novos_tipos {letter}+DataType
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "}"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "("                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 ")"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "["                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "]"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 ".."               {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "<>--"             {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "--<>"             {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "*"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "@"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 ":"                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 ","                {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
+
 "--"               {
                     token_start_column = yycolumn;
                     yycolumn += yyleng;
                     return SIMBOLO;
-                }
+                    }
 
 .                   { 
                       token_start_column = yycolumn; yycolumn += yyleng;

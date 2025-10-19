@@ -54,7 +54,6 @@ void SymbolTable::exportJson() const {
             fout << "{\"line\": " << sym.locations[i].line << ", \"col\": " << sym.locations[i].column << "}";
         }
         fout << "]\n";
-        // ----------------------
         
         fout << "    }";
     }
@@ -63,4 +62,40 @@ void SymbolTable::exportJson() const {
     fout.close();
 
     cout << "Tabela de símbolos exportada para output/symbol_table.json" << endl;
+}
+
+int SymbolTable::countTokensOccurrences(int token) const {
+    int count = 0;
+    for (const auto& pair : symbols) {
+        const Symbol& sym = pair.second;
+        if (sym.token == token) {
+            count++;
+        }
+    }
+    return count;
+}
+
+void SymbolTable::generateReport() const {
+    ofstream fout;
+
+    fout.open("output/symbol_report.txt");
+    if (!fout.is_open()) {
+        cerr << "Erro ao abrir o arquivo symbol_report.txt para escrita." << endl;
+        return;
+    }
+
+    fout << "RELATÓRIO DE ANÁLISE LÉXICA" << endl;
+    fout << "==========================" << endl;
+
+    fout << "Total de palavras reservadas: " << countTokensOccurrences(PALAVRA_RESERVADA) << endl;
+    fout << "Total de classes: " << countTokensOccurrences(NOME_DE_CLASSE) << endl;
+    fout << "Total de relações: " << countTokensOccurrences(NOME_DE_RELACAO) << endl;
+    fout << "Total de instâncias: " << countTokensOccurrences(INSTANCIA) << endl;
+    fout << "Total de meta atributos: " << countTokensOccurrences(META_ATRIBUTO) << endl;
+
+    fout << "==========================" << endl;
+
+    fout.close();
+
+    cout << "Relatório da tabela de símbolos gerado em output/symbol_report.txt" << endl;
 }

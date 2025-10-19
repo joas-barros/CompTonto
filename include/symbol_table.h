@@ -9,7 +9,8 @@
 #include "tokens.h"
 
 using namespace std;
-   
+
+// Estrutura para armazenar a localização de um token
 struct Location {
     int line;
     int column;
@@ -28,7 +29,8 @@ public:
     void addSymbol(const string& name, int token, int line, int column);
     const Symbol* getSymbol(const string& name) const;
     void exportJson() const;
-
+    void generateReport() const;
+    int countTokensOccurrences(int token) const;
 private:
     unordered_map<string, Symbol> symbols;
 };
