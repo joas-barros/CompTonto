@@ -72,14 +72,18 @@ void FileGenerator::generateSymbolReport(const string& filename) {
 void FileGenerator::generateErrorReport(const string& filename) {
     int numErrors = symbolTable.countTokensOccurrences(NAO_IDENTIFICADO);
 
-    if (numErrors == 0) {
-        return; 
-    }
-
     fout.open(filename);
     if (!fout.is_open()) {
         cerr << RED_TEXT << "Erro ao abrir o arquivo error_report.txt para escrita." << RESET_COLOR << endl;
         return;
+    }
+
+    if (numErrors == 0) {
+        fout << "Nenhum erro léxico encontrado! :)" << endl;
+        fout.close();
+
+        cout << GREEN_TEXT << "Nenhum erro léxico encontrado e reportado em output/error_report.txt" << RESET_COLOR << endl;
+        return; 
     }
 
     fout << "RELATÓRIO DE ERROS LÉXICOS" << endl;
