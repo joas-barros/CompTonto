@@ -1,15 +1,12 @@
 %{
 #include <iostream>
-#include <fstream>
 #include "tokens.h"
 #include "symbol_table.h"
 #include "colors.h"
+#include "file_generator.h"
 
 
 using namespace std;
-
-// Contadores para o relatório
-int cont_classes = 0, cont_relacoes = 0, cont_palavras_reservadas = 0, cont_individuos = 0, cont_palavras_chave = 0, cont_meta_atributos = 0;
 
 // Variáveis para rastreamento de posição
 int yycolumn = 1; 
@@ -17,7 +14,8 @@ int token_start_column = 1;
 
 // Tabela de símbolos
 SymbolTable symbolTable;
-ofstream fout;
+
+FileGenerator fileGenerator(symbolTable);
 
 void generateReport();
 
@@ -223,8 +221,8 @@ int main() {
 }
 
 void generateReport() {
-    symbolTable.exportJson();
-    symbolTable.generateReport();
+    fileGenerator.generateSymbolTableJson("output/symbol_table.json");
+    fileGenerator.generateSymbolReport("output/symbol_report.txt");
 
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << RESET_COLOR << endl;

@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <fstream>
 #include "tokens.h"
 #include "colors.h"
 
@@ -29,6 +28,7 @@ class SymbolTable {
 public:
     void addSymbol(const string& name, int token, int line, int column);
     const Symbol* getSymbol(const string& name) const;
+    const unordered_map<string, Symbol>& getSymbols() const;
     void exportJson() const;
     void generateReport() const;
     int countTokensOccurrences(int token) const;
