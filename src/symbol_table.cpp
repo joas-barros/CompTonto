@@ -27,7 +27,7 @@ void SymbolTable::exportJson() const {
 
     fout.open("output/symbol_table.json");
     if (!fout.is_open()) {
-        cerr << "Erro ao abrir o arquivo symbol_table.json para escrita." << endl;
+        cerr << RED_TEXT << "Erro ao abrir o arquivo symbol_table.json para escrita." << RESET_COLOR << endl;
         return;
     }
 
@@ -61,7 +61,7 @@ void SymbolTable::exportJson() const {
     fout << "}\n";
     fout.close();
 
-    cout << "Tabela de símbolos exportada para output/symbol_table.json" << endl;
+    cout << YELLOW_TEXT << "Tabela de símbolos exportada para output/symbol_table.json" << RESET_COLOR << endl;
 }
 
 int SymbolTable::countTokensOccurrences(int token) const {
@@ -80,7 +80,7 @@ void SymbolTable::generateReport() const {
 
     fout.open("output/symbol_report.txt");
     if (!fout.is_open()) {
-        cerr << "Erro ao abrir o arquivo symbol_report.txt para escrita." << endl;
+        cerr << RED_TEXT << "Erro ao abrir o arquivo symbol_report.txt para escrita." << RESET_COLOR << endl;
         return;
     }
 
@@ -97,5 +97,5 @@ void SymbolTable::generateReport() const {
 
     fout.close();
 
-    cout << "Relatório da tabela de símbolos gerado em output/symbol_report.txt" << endl;
+    cout << YELLOW_TEXT << "Relatório da tabela de símbolos gerado em output/symbol_report.txt" << RESET_COLOR << endl;
 }

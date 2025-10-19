@@ -3,6 +3,7 @@
 #include <fstream>
 #include "tokens.h"
 #include "symbol_table.h"
+#include "colors.h"
 
 
 using namespace std;
@@ -204,7 +205,7 @@ novos_tipos {letter}+DataType
 
 .                   { 
                       token_start_column = yycolumn; yycolumn += yyleng;
-                      cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
+                      cerr << RED_TEXT << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << RESET_COLOR << endl; 
                       return NAO_IDENTIFICADO;
                    }
 %%
@@ -225,7 +226,7 @@ void generateReport() {
     symbolTable.exportJson();
     symbolTable.generateReport();
 
-    cout << "===========================================" << endl;
-    cout << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << endl;
-    cout << "===========================================" << endl;
+    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
+    cout << GREEN_TEXT << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << RESET_COLOR << endl;
+    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
 }

@@ -7,6 +7,7 @@
 #include <vector>
 #include <fstream>
 #include "tokens.h"
+#include "colors.h"
 
 using namespace std;
 
