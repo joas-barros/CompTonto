@@ -7,8 +7,14 @@
 
 using namespace std;
 
+// Contadores para o relatório
 int cont_classes = 0, cont_relacoes = 0, cont_palavras_reservadas = 0, cont_individuos = 0, cont_palavras_chave = 0, cont_meta_atributos = 0;
 
+// Variáveis para rastreamento de posição
+int yycolumn = 1; 
+int token_start_column = 1; 
+
+// Tabela de símbolos
 SymbolTable symbolTable;
 ofstream fout;
 
@@ -19,7 +25,7 @@ void generateReport();
 %option noyywrap
 %option yylineno
 
-delim [ \t\n]
+delim [ \t]
 ws {delim}+
 digit [0-9]
 letter [a-zA-Z]
@@ -47,44 +53,144 @@ novos_tipos {letter}+DataType
 
 %%
 
-{ws}                { /* ignore whitespace */ }
+{ws}                { yycolumn += yyleng; }
 
-{number}             return NUMERO;
+\n                  { yycolumn = 1; }
 
-{palavras_reservadas} return PALAVRA_RESERVADA;
+{number}            {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return NUMERO;
+                    }
 
-{dados_nativos}     return DADO_NATIVO;
+{palavras_reservadas} {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return PALAVRA_RESERVADA;
 
-{meta_atributos}    return META_ATRIBUTO;
+                        }
 
-{esteriotipo_classe} return ESTERIOTIPO_CLASSE;
+{dados_nativos}     {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return DADO_NATIVO;
+                    }
 
-{esteriotipo_relacao} return ESTERIOTIPO_RELACAO;
+{meta_atributos}    {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return META_ATRIBUTO;
+                    }
 
-{novos_tipos}       return NOVO_TIPO;
+{esteriotipo_classe} {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return ESTERIOTIPO_CLASSE;
+                    }
 
-{nome_de_classe}    return NOME_DE_CLASSE;
+{esteriotipo_relacao} {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return ESTERIOTIPO_RELACAO;
+                    }
 
-{nome_de_relacao}   return NOME_DE_RELACAO;
+{novos_tipos}       {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return NOVO_TIPO;
+                    }
 
-{instancias}        return INSTANCIA;
+{nome_de_classe}    {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return NOME_DE_CLASSE;
+                    }
 
-"{"                return SIMBOLO;
-"}"                return SIMBOLO;
-"("                return SIMBOLO;
-")"                return SIMBOLO;
-"["                return SIMBOLO;
-"]"                return SIMBOLO;
-".."               return SIMBOLO;
-"<>--"             return SIMBOLO;
-"--<>"             return SIMBOLO;
-"*"                return SIMBOLO;
-"@"                return SIMBOLO;
-":"                return SIMBOLO;
-","                return SIMBOLO;
-"--"               return SIMBOLO;
+{nome_de_relacao}   {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return NOME_DE_RELACAO;
+                    }
+
+{instancias}        {
+                        token_start_column = yycolumn;
+                        yycolumn += yyleng;
+                        return INSTANCIA;
+                    }
+
+"{"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"}"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"("                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+")"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"["                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"]"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+".."               {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"<>--"             {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"--<>"             {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"*"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"@"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+":"                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+","                {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
+"--"               {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return SIMBOLO;
+                }
 
 .                   { 
+                      token_start_column = yycolumn; yycolumn += yyleng;
                       cerr << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << endl; 
                       return NAO_IDENTIFICADO;
                    }
@@ -122,7 +228,7 @@ int main() {
                 break;
         }
 
-        symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno());
+        symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno(), token_start_column);
    }
 
    generateReport();

@@ -8,7 +8,7 @@ void SymbolTable::addSymbol(const string& name, int token, int line, int column)
         Symbol sym;
         sym.name = name;
         sym.token = token;
-        sym.lines.push_back(line);
+        sym.locations.push_back({line, column});
         symbols[name] = sym;
     }
 }
@@ -44,12 +44,17 @@ void SymbolTable::exportJson() const {
         const string tokenStr = tokenToString(static_cast<Token>(sym.token));
 
 
+        fout << "    {\n";
+        fout << "      \"name\": \"" << sym.name << "\",\n";
+        fout << "      \"token\": \"" << tokenStr << "\",\n";
+        
         fout << "      \"locations\": [";
         for (size_t i = 0; i < sym.locations.size(); ++i) {
             if (i > 0) fout << ", ";
             fout << "{\"line\": " << sym.locations[i].line << ", \"col\": " << sym.locations[i].column << "}";
         }
         fout << "]\n";
+        // ----------------------
         
         fout << "    }";
     }
