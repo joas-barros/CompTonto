@@ -15,6 +15,7 @@ int token_start_column = 1;
 // Tabela de símbolos
 SymbolTable symbolTable;
 
+// Gerador de arquivo
 FileGenerator fileGenerator(symbolTable);
 
 void generateReport();
@@ -202,8 +203,9 @@ novos_tipos {letter}+DataType
                     }
 
 .                   { 
-                      token_start_column = yycolumn; yycolumn += yyleng;
-                      cerr << RED_TEXT << "ERRO: Caracter desconhecido " << yytext << " na linha " << yylineno << RESET_COLOR << endl; 
+                      token_start_column = yycolumn; 
+                      cerr << RED_TEXT << "Erro Léxico: Símbolo não identificado '" << yytext << "' na linha " << yylineno << ", coluna " << token_start_column << RESET_COLOR << endl;
+                      yycolumn += yyleng;
                       return NAO_IDENTIFICADO;
                    }
 %%
@@ -223,6 +225,7 @@ int main() {
 void generateReport() {
     fileGenerator.generateSymbolTableJson("output/symbol_table.json");
     fileGenerator.generateSymbolReport("output/symbol_report.txt");
+    fileGenerator.generateErrorReport("output/error_report.txt");
 
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << RESET_COLOR << endl;

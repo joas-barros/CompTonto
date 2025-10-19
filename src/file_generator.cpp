@@ -68,3 +68,34 @@ void FileGenerator::generateSymbolReport(const string& filename) {
 
     cout << YELLOW_TEXT << "Relatório da tabela de símbolos gerado em output/symbol_report.txt" << RESET_COLOR << endl;
 }
+
+void FileGenerator::generateErrorReport(const string& filename) {
+    int numErrors = symbolTable.countTokensOccurrences(NAO_IDENTIFICADO);
+
+    if (numErrors == 0) {
+        return; 
+    }
+
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo error_report.txt para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    fout << "RELATÓRIO DE ERROS LÉXICOS" << endl;
+    fout << "==========================" << endl;
+
+    for (const auto& pair : symbolTable.getSymbols()) {
+        const Symbol& sym = pair.second;
+        if (sym.token == NAO_IDENTIFICADO) {
+            for (const auto& loc : sym.locations) {
+                fout << "Erro Léxico: Símbolo não identificado '" << sym.name << "' na linha " << loc.line << ", coluna " << loc.column << endl;
+            }
+        }
+    }
+
+    fout << "==========================" << endl;
+    fout.close();
+
+    cout << RED_TEXT << numErrors << " erros léxicos encontrados e reportados em output/error_report.txt" << RESET_COLOR << endl;
+}

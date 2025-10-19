@@ -18,6 +18,7 @@ public:
     ~FileGenerator();
     void generateSymbolTableJson(const string& filename);
     void generateSymbolReport(const string& filename);
+    void generateErrorReport(const string& filename);
 };
 
 #endif // FILE_GENERATOR_H
