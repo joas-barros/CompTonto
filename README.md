@@ -4,6 +4,22 @@ Este repositório tem como finalidade hospedar a implementação, juntamente com
 
 ## Sumário
 
+* [Objetivos](#objetivos)
+* [Tecnologias utilizadas](#tecnologias-utilizadas)
+* [Tutorial de execução](#tutorial-de-execução)
+  * [Instalação das dependências](#instalação-das-dependências)
+  * [Baixar repositório do github](#baixar-repositório-do-github)
+  * [Build](#build)
+  * [Execução](#execução)
+* [Estrutura do projeto](#estrutura-do-projeto)
+* [Resultados gerados pelo analisador](#resultados-gerados-pelo-analisador)
+  * [Tabela de símbolos](#tabela-de-símbolos)
+  * [Tokens identificados](#tokens-identificados)
+  * [Relatório de análise léxica](#relatório-de-análise-léxica)
+* [Tratamento de exceções](#tratamento-de-exceções)
+* [Próximos passos](#próximos-passos)
+* [Referências](#referências)
+
 ## Objetivos
 
 TONTO é o acrônimo para **Textual Ontology Language**, uma linguagem projetada para especificar textualmente ontologias como artefatos computacionais.
