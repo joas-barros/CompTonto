@@ -99,7 +99,7 @@ O arquivo `teste.tonto` é o arquivo da analise léxica, caso queira mudar o exe
 ## Estrutura do projeto
 
 ```bash
-TONTOPILER
+COMPTONTO
 ├── .vscode/                 # Configurações do Visual Studio Code
 ├── Build/                   # Diretório de build 
 ├── include/                 # Cabeçalhos do projeto (arquivos .h)
@@ -119,10 +119,93 @@ TONTOPILER
 ```
 
 
-## Resultado gerado pelo analisador
+## Resultados gerados pelo analisador
+
+Ao fim do processo de análise léxica, são gerados 3 arquivos no diretório `outputs/`, sendo cada um voltado para uma métrica específica da análise.
+
+### Tabela de símbolos
+
+O primeiro arquivo a ser gerado é o `symbol_table.json`, nele, estão contidos todos os lexemas encontrados pelo analisador, bem como a qual token ele pertence, e uma lista com a localização de todas as suas ocorrências no código.
+
+```json
+{
+  "symbols": [
+    {
+      "name": "import",
+      "token": "PALAVRA_RESERVADA",
+      "locations": [
+        {"line": 1, "col": 1}
+      ]
+    },
+    {
+      "name": "Medicine",
+      "token": "NOME_DE_CLASSE",
+      "locations": [
+        {"line": 25, "col": 38},
+        {"line": 27, "col": 40}
+      ]
+    }
+  ]
+}
+```
+
+### Tokens identificados
+
+- `NUMERO`: Identifica números inteiros, decimais e em notação científica.
+- `ESTERIOTIPO_CLASSE`: event, situation, process,category,mixin,phaseMixin, roleMixin, historicalMixin, kind, collective, quantity, quality, mode, intrisicMode, extrinsicMode, subkind, phase, role, historicalRole, relator.
+- `ESTERIOTIPO_RELACAO`: material, derivation, comparative, mediation, characterization, externalDependence, componentOf, memberOf, subCollectionOf, subQualityOf, instantiation, termination, participational, participation, historicalDependence, creation, manifestation, bringsAbout, triggers, composition, aggregation, inherence, value, formal, constitution.
+- `PALAVRA_RESERVADA`: genset, disjoint, complete, general, specifies, where, package, import, functional-complexes, intrinsic-modes
+- `SIMBOLO`: “{“, “}”, “(“, “)”, “[“, “]”, “..”, “<>--” , “--<>”, “*”, “@”, “:”, "--".
+- `NOME_DE_CLASSE`: Iniciando com letra maiúscula, seguida por qualquer
+combinação de letras, ou tendo sublinhado como subcadeia própria, sem números.
+- `NOME_DE_RELACAO`: Começando com letra minúscula, seguida por qualquer
+combinação de letras, ou tendo sublinhado como subcadeia própria, sem números.
+- `INSTANCIA`: Iniciando com qualquer letra, podendo ter o sublinhado como subcadeia própria e terminando com algum número inteiro.
+- `DADO_NATIVO`: number, string, boolean, date, time, datetime.
+“DataType”. 
+- `NOVO_TIPO`: Iniciando com letra, sem números, sem sublinhado e terminando com a subcadeia
+“DataType”. 
+- `META_ATRIBUTO`: ordered, const, derived, subsets, redefines.
+
+### Relatório de análise léxica
+
+O próximo arquivo a ser gerado é o `symbol_report.txt`, nele é contabilizado a ocorrência de alguns tokens de forma distinta no código.
+
+```txt
+RELATÓRIO DE ANÁLISE LÉXICA
+Contagem da quantidade de ocorrências únicas de cada token:
+==========================
+Total de palavras reservadas: 6
+Total de classes: 30
+Total de esteriotipos de classes: 9
+Total de relações: 11
+Total de esteriotipos de relações: 0
+Total de instâncias: 0
+Total de meta atributos: 0
+==========================
+```
 
 ## Tratamento de exceções
 
+Um erro léxico é identificado quando um determinado lexema não segue nenhum padrão estabelecido pelas expressões regulares no arquivo `lexer.l`, quando isso acontece, o analisador léxico retorna um token `NAO_IDENTIFICADO` na tabela de simbolos, bem como emite um alerta visual na linha de comando sobre o erro encontrado. Por fim, todas as ocorrências de erro léxico são salvas no arquivo `output/error_report.txt` juntamente com a localização do erro no código. 
+
+```txt
+RELATÓRIO DE ERROS LÉXICOS
+==========================
+Erro Léxico: Símbolo não identificado '?' na linha 79, coluna 20
+Erro Léxico: Símbolo não identificado '?' na linha 89, coluna 9
+Erro Léxico: Símbolo não identificado '?' na linha 93, coluna 21
+==========================
+```
+
 ## Próximos passos
 
-## Referencias
+Após a conclusão da análise léxica, que transforma o código-fonte em uma sequência de tokens, o próximo passo natural é o desenvolvimento do analisador sintático. Esta nova fase será responsável por validar a estrutura gramatical da linguagem TONTO.
+
+## Referências
+
+- Aho, Alfred V. Compiladores: Princípios, Técnicas e Ferramentas. 2ª ed. Pearson Addison-Wesley, 2008. ISBN: 978-85-88639-84-9
+
+- Lenke, M., Tonto: A Textual Syntax for OntoUML – A textual way for conceptual modeling. Available
+online at: https://matheuslenke.github.io/tonto-docs/
+

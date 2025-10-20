@@ -12,7 +12,6 @@ enum Token {
     SIMBOLO,
     NOME_DE_CLASSE,
     NOME_DE_RELACAO,
-    NOME_DE_INSTANCIA,
     INSTANCIA,
     DADO_NATIVO,
     NOVO_TIPO,
@@ -29,7 +28,6 @@ inline std::string tokenToString(Token token) {
         case SIMBOLO:             return "SIMBOLO";
         case NOME_DE_CLASSE:      return "NOME_DE_CLASSE";
         case NOME_DE_RELACAO:     return "NOME_DE_RELACAO";
-        case NOME_DE_INSTANCIA:   return "NOME_DE_INSTANCIA";
         case INSTANCIA:           return "INSTANCIA";
         case DADO_NATIVO:         return "DADO_NATIVO";
         case NOVO_TIPO:           return "NOVO_TIPO";
