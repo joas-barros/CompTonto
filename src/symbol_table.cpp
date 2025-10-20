@@ -27,7 +27,7 @@ int SymbolTable::countTokensOccurrences(int token) const {
     for (const auto& pair : symbols) {
         const Symbol& sym = pair.second;
         if (sym.token == token) {
-            count += sym.locations.size();
+            count += 1;
         }
     }
     return count;

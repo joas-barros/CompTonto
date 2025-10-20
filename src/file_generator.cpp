@@ -54,11 +54,14 @@ void FileGenerator::generateSymbolReport(const string& filename) {
     }
 
     fout << "RELATÓRIO DE ANÁLISE LÉXICA" << endl;
+    fout << "Contagem da quantidade de ocorrências únicas de cada token:" << endl;
     fout << "==========================" << endl;
 
     fout << "Total de palavras reservadas: " << symbolTable.countTokensOccurrences(PALAVRA_RESERVADA) << endl;
     fout << "Total de classes: " << symbolTable.countTokensOccurrences(NOME_DE_CLASSE) << endl;
+    fout << "Total de esteriotipos de classes: " << symbolTable.countTokensOccurrences(ESTERIOTIPO_CLASSE) << endl;
     fout << "Total de relações: " << symbolTable.countTokensOccurrences(NOME_DE_RELACAO) << endl;
+    fout << "Total de esteriotipos de relações: " << symbolTable.countTokensOccurrences(ESTERIOTIPO_RELACAO) << endl;
     fout << "Total de instâncias: " << symbolTable.countTokensOccurrences(INSTANCIA) << endl;
     fout << "Total de meta atributos: " << symbolTable.countTokensOccurrences(META_ATRIBUTO) << endl;
 
