@@ -43,9 +43,9 @@ dados_nativos number|string|boolean|date|time|datetime
 
 meta_atributos ordered|const|derived|subsets|redefines
 
-nome_de_classe {upper}(({letter}|_)*{letter})?
+nome_de_classe {upper}(({letter}|_)*{letter}?)?
 
-nome_de_relacao {lower}(({letter}|_)*{letter})?
+nome_de_relacao {lower}(({letter}|_)*{letter}?)?
 
 instancias ^{letter}[a-zA-Z_]*{digit}+$
 
@@ -56,12 +56,6 @@ novos_tipos {letter}+DataType
 {ws}                { yycolumn += yyleng; }
 
 \n                  { yycolumn = 1; }
-
-{number}            {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return NUMERO;
-                    }
 
 {palavras_reservadas} {
                         token_start_column = yycolumn;
@@ -116,6 +110,13 @@ novos_tipos {letter}+DataType
                         token_start_column = yycolumn;
                         yycolumn += yyleng;
                         return INSTANCIA;
+                    }
+
+
+{number}            {
+                    token_start_column = yycolumn;
+                    yycolumn += yyleng;
+                    return NUMERO;
                     }
 
 "{"                {
