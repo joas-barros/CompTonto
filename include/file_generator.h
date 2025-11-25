@@ -6,9 +6,11 @@
 #include <string>
 #include "symbol_table.h"
 #include "colors.h"
+#include "parser.hpp"
 
 using namespace std;
 
+string getTokenName(int token);
 class FileGenerator{
 private:
     const SymbolTable& symbolTable;

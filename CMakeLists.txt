@@ -18,9 +18,9 @@ find_package(FLEX REQUIRED)
 BISON_TARGET(Parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp COMPILE_FLAGS "-d")
 
 # Target do Flex
-FLEX_TARGET(Lexer lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc COMPILE_FLAGS "-+")
+FLEX_TARGET(Lexer lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc)
 
-# 3. Define a dependência (ADICIONADO)
+# 3. Define a dependência 
 # Isso garante que o parser.hpp seja gerado ANTES do Flex tentar compilar
 ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
 

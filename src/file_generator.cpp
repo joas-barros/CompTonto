@@ -1,5 +1,23 @@
 #include "file_generator.h"
 
+string getTokenName(int token) {
+    switch (token) {
+        case PALAVRA_RESERVADA: return "PALAVRA_RESERVADA";
+        case DADO_NATIVO:       return "DADO_NATIVO";
+        case META_ATRIBUTO:     return "META_ATRIBUTO";
+        case ESTERIOTIPO_CLASSE: return "ESTERIOTIPO_CLASSE";
+        case ESTERIOTIPO_RELACAO: return "ESTERIOTIPO_RELACAO";
+        case NOVO_TIPO:         return "NOVO_TIPO";
+        case NOME_DE_CLASSE:    return "NOME_DE_CLASSE";
+        case NOME_DE_RELACAO:   return "NOME_DE_RELACAO";
+        case INSTANCIA:         return "INSTANCIA";
+        case NUMERO:            return "NUMERO";
+        case SIMBOLO:           return "SIMBOLO";
+        case NAO_IDENTIFICADO:  return "NAO_IDENTIFICADO";
+        default:                return "UNKNOWN (" + to_string(token) + ")";
+    }
+}
+
 FileGenerator::FileGenerator(const SymbolTable& symTable) : symbolTable(symTable) {}
 
 FileGenerator::~FileGenerator() {}
@@ -22,7 +40,7 @@ void FileGenerator::generateSymbolTableJson(const string& filename) {
         first = false;
         const Symbol& sym = pair.second;
 
-        const string tokenStr = tokenToString(static_cast<Token>(sym.token));
+        const string tokenStr = getTokenName(sym.token);
 
 
         fout << "    {\n";

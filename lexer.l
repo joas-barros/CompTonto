@@ -1,9 +1,8 @@
 %{
 #include <iostream>
-#include "tokens.h"
 #include "symbol_table.h"
 #include "colors.h"
-#include "file_generator.h"
+#include "parser.hpp"
 
 
 using namespace std;
@@ -13,12 +12,17 @@ int yycolumn = 1;
 int token_start_column = 1; 
 
 // Tabela de símbolos
-SymbolTable symbolTable;
+extern SymbolTable symbolTable;
 
-// Gerador de arquivo
-FileGenerator fileGenerator(symbolTable);
-
-void generateReport();
+int processToken(int tokenType) {
+    token_start_column = yycolumn;
+    yycolumn += yyleng;
+    
+    
+    symbolTable.addSymbol(yytext, tokenType, yylineno, token_start_column);
+    
+    return tokenType;
+}
 
 %}
 
@@ -57,151 +61,46 @@ novos_tipos {letter}+DataType
 
 \n                  { yycolumn = 1; }
 
-{palavras_reservadas} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return PALAVRA_RESERVADA;
+{palavras_reservadas} {return processToken(PALAVRA_RESERVADA);}
 
-                        }
+{dados_nativos}     {return processToken(DADO_NATIVO);}
 
-{dados_nativos}     {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return DADO_NATIVO;
-                    }
+{meta_atributos}    {return processToken(META_ATRIBUTO);}
 
-{meta_atributos}    {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return META_ATRIBUTO;
-                    }
+{esteriotipo_classe} {return processToken(ESTERIOTIPO_CLASSE);}
 
-{esteriotipo_classe} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return ESTERIOTIPO_CLASSE;
-                    }
+{esteriotipo_relacao} {return processToken(ESTERIOTIPO_RELACAO);}
 
-{esteriotipo_relacao} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return ESTERIOTIPO_RELACAO;
-                    }
-
-{novos_tipos}       {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOVO_TIPO;
-                    }
+{novos_tipos}       {return processToken(NOVO_TIPO);}
 
 {nome_de_classe}    {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOME_DE_CLASSE;
+                        yylval.sval = strdup(yytext); 
+                        return processToken(NOME_DE_CLASSE);
                     }
 
 {nome_de_relacao}   {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOME_DE_RELACAO;
+                        yylval.sval = strdup(yytext);
+                        return processToken(NOME_DE_RELACAO);
                     }
 
-{instancias}        {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return INSTANCIA;
-                    }
+{instancias}        {return processToken(INSTANCIA);}
 
+{number}            {return processToken(NUMERO);}
 
-{number}            {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return NUMERO;
-                    }
-
-"{"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"}"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"("                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-")"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"["                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"]"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-".."               {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"<>--"             {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"--<>"             {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"*"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"@"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-":"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-","                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"--"               {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
+"{"         |
+"}"         |
+"("         |
+")"         |
+"["         |
+"]"         |
+".."        |
+"<>--"      |
+"--<>"      |
+"*"         |
+"@"         |
+":"         |
+","         |
+"--"        { return processToken(SIMBOLO); }
 
 .                   { 
                       token_start_column = yycolumn; 
@@ -210,25 +109,3 @@ novos_tipos {letter}+DataType
                       return NAO_IDENTIFICADO;
                    }
 %%
-
-int main() {
-   yyFlexLexer lexer;
-   int lookahead;
-
-   while ((lookahead = lexer.yylex()) != 0) {
-        symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno(), token_start_column);
-   }
-
-   generateReport();
-   return 0;
-}
-
-void generateReport() {
-    fileGenerator.generateSymbolTableJson("output/symbol_table.json");
-    fileGenerator.generateSymbolReport("output/symbol_report.txt");
-    fileGenerator.generateErrorReport("output/error_report.txt");
-
-    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
-    cout << GREEN_TEXT << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << RESET_COLOR << endl;
-    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
-}
