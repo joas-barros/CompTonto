@@ -7,18 +7,27 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Encontrar Arquivos-Fonte ---
-# Procura recursivamente por todos os arquivos .cpp dentro do diretório src/
-# e os armazena na variável PROJECT_SOURCES.
 file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp")
 
-# --- Configuração do Flex ---
-# É uma boa prática adicionar REQUIRED para falhar se o Flex não for encontrado.
+# --- Configuração do Flex e Bison ---
+# 1. Encontra o pacote do Bison 
+find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+
+# 2. Define o alvo do Bison
+BISON_TARGET(Parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp COMPILE_FLAGS "-d")
+
+# Target do Flex
 FLEX_TARGET(Lexer lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc COMPILE_FLAGS "-+")
 
+# 3. Define a dependência (ADICIONADO)
+# Isso garante que o parser.hpp seja gerado ANTES do Flex tentar compilar
+ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
+
+
 # --- Criação do Executável ---
-# Adiciona o executável com a saída do Flex e todos os arquivos .cpp de src/
 add_executable(comptonto 
+    ${BISON_Parser_OUTPUTS}
     ${FLEX_Lexer_OUTPUTS} 
     ${PROJECT_SOURCES}
 )
