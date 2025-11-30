@@ -24,7 +24,11 @@ string getTokenName(int token) {
         case DISJOINT:         return "DISJOINT";
         case COMPLETE:         return "COMPLETE";
         case GENERAL:          return "GENERAL";
-        case RELATION_KEYWORD: return "RELATION_KEYWORD";
+        case LEFT_AGGREGATION_ARROW: return "LEFT_AGGREGATION_ARROW";
+        case RIGHT_AGGREGATION_ARROW: return "RIGHT_AGGREGATION_ARROW";
+        case LEFT_COMPOSITION_ARROW: return "LEFT_COMPOSITION_ARROW";
+        case RIGHT_COMPOSITION_ARROW: return "RIGHT_COMPOSITION_ARROW";
+        case GENERAL_RELATION_ARROW: return "GENERAL_RELATION_ARROW";
         case LEFT_CURLY_BRACKETS: return "LEFT_CURLY_BRACKETS";
         case RIGHT_CURLY_BRACKETS: return "RIGHT_CURLY_BRACKETS";
         case LEFT_PARENTHESIS: return "LEFT_PARENTHESIS";

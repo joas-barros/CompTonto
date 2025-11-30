@@ -143,11 +143,11 @@ novos_tipos {letter}+DataType
 "]"        { return processToken(RIGHT_SQUARE_BRACKETS); }
 ".."       { return processToken(DOUBLEDOT); }
 
-"<>--"      |
-"--<>"      |
-"--<o>"     |
-"<o>--"     |
-"--"        { return processToken(RELATION_KEYWORD); }
+"<>--"      { return processToken(LEFT_AGGREGATION_ARROW); }
+"--<>"      { return processToken(RIGHT_AGGREGATION_ARROW); }
+"--<o>"     { return processToken(RIGHT_COMPOSITION_ARROW); }
+"<o>--"     { return processToken(LEFT_COMPOSITION_ARROW); }
+"--"        { return processToken(GENERAL_RELATION_ARROW); }
 
 "*"        { return processToken(ASTERISK); }
 "@"        { return processToken(AT); }

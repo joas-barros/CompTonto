@@ -59,7 +59,13 @@ FileGenerator fileGenerator(symbolTable);
 %token LEFT_SQUARE_BRACKETS
 %token COMMA
 %token AT
-%token RELATION_KEYWORD
+
+%token LEFT_COMPOSITION_ARROW
+%token RIGHT_COMPOSITION_ARROW
+%token LEFT_AGGREGATION_ARROW
+%token RIGHT_AGGREGATION_ARROW
+%token GENERAL_RELATION_ARROW
+
 %token COLON
 %token DOUBLEDOT
 %token ASTERISK
@@ -67,55 +73,6 @@ FileGenerator fileGenerator(symbolTable);
 %token NAO_IDENTIFICADO
 
 %%
-
-/* programa:
-    statements
-    ;
-
-statements:
-    statements statement
-    | statement
-    ;
-
-statement:
-    PALAVRA_RESERVADA
-    | IMPORT
-    | PACKAGE
-    | GENSET
-    | DISJOINT
-    | COMPLETE
-    | GENERAL
-    | SPECIFICS
-    | SPECIALIZES
-    | WHERE
-    | ENUM
-    | RELATION
-    | DADO_NATIVO
-    | META_ATRIBUTO
-    | ESTERIOTIPO_CLASSE
-    | ESTERIOTIPO_RELACAO
-    | NOVO_TIPO
-    | NOME_DE_CLASSE { 
-        cout << "Parser reconheceu uma classe: " << $1 << endl;
-    }
-    | NOME_DE_RELACAO { 
-        cout << "Parser reconheceu uma relação: " << $1 << endl;
-    }
-    | INSTANCIA
-    | NUMERO
-    | RIGHT_PARENTHESIS
-    | LEFT_PARENTHESIS
-    | RIGHT_CURLY_BRACKETS
-    | LEFT_CURLY_BRACKETS
-    | RIGHT_SQUARE_BRACKETS
-    | LEFT_SQUARE_BRACKETS
-    | COMMA
-    | AT
-    | RELATION_KEYWORD
-    | COLON
-    | DOUBLEDOT
-    | ASTERISK
-    ; */
 
 ontology:
     package_declaration body
@@ -143,6 +100,8 @@ class_declaration:
     } |
     ESTERIOTIPO_CLASSE NOME_DE_CLASSE LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS {
         // symbolTable.addClass($2, $1, yylineno, token_start_column);
+    } |
+    ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES NOME_DE_CLASSE {
     }
     ;
 
@@ -152,8 +111,6 @@ class_body:
     ;
 
 class_body_element:
-    attributes_declaration class_body_element |
-    internal_relation_declaration class_body_element |
     attributes_declaration |
     internal_relation_declaration
     ;
@@ -182,9 +139,14 @@ attribute_declaration:
     ;
 
 internal_relation_declaration:
-    AT ESTERIOTIPO_RELACAO cardinality RELATION_KEYWORD cardinality NOME_DE_CLASSE {
+    AT ESTERIOTIPO_RELACAO cardinality internal_relation_keyword cardinality NOME_DE_CLASSE {
         // symbolTable.addInternalRelationToCurrentClass($3, $4, $6, $2, yylineno, token_start_column);
     }
+    ;
+
+internal_relation_keyword:
+    relation_keyword |
+    relation_keyword NOME_DE_RELACAO GENERAL_RELATION_ARROW
     ;
 
 auxiliary_declaration:
@@ -216,7 +178,7 @@ enum_value:
     };
 
 external_relation_declaration:
-    AT ESTERIOTIPO_RELACAO NOME_DE_RELACAO NOME_DE_CLASSE cardinality RELATION_KEYWORD cardinality NOME_DE_CLASSE {
+    AT ESTERIOTIPO_RELACAO RELATION NOME_DE_RELACAO NOME_DE_CLASSE cardinality relation_keyword cardinality NOME_DE_CLASSE {
         // symbolTable.addExternalRelation($3, $2, $4, $5, $7, yylineno, token_start_column);
     };
 
@@ -242,7 +204,7 @@ generalization_declaration:
     ;
 
 inline_generalization_declaration:
-    generalization_restrictions GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES doamin_classes {
+    generalization_restrictions GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES domain_classes {
         // symbolTable.addGeneralization($3, $1, $5, $7, yylineno, token_start_column);
     }
     ;
@@ -251,7 +213,6 @@ generalization_restrictions:
     DISJOINT |
     COMPLETE |
     DISJOINT COMPLETE |
-    COMPLETE DISJOINT |
     /* empty */
     ;
 
@@ -260,7 +221,7 @@ image_classes:
     NOME_DE_CLASSE COMMA image_classes
     ;
 
-doamin_classes:
+domain_classes:
     NOME_DE_CLASSE;
 
 block_generalization_declaration:
@@ -283,6 +244,14 @@ generalization_body_image:
     SPECIFICS image_classes {
         // symbolTable.addGeneralizationImage($2, yylineno, token_start_column);
     }
+    ;
+
+relation_keyword:
+    LEFT_COMPOSITION_ARROW |
+    RIGHT_COMPOSITION_ARROW |
+    LEFT_AGGREGATION_ARROW |
+    RIGHT_AGGREGATION_ARROW |
+    GENERAL_RELATION_ARROW
     ;
 
 
