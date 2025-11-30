@@ -182,7 +182,9 @@ attribute_declaration:
     ;
 
 internal_relation_declaration:
-    // TODO
+    AT ESTERIOTIPO_RELACAO cardinality RELATION_KEYWORD cardinality NOME_DE_CLASSE {
+        // symbolTable.addInternalRelationToCurrentClass($3, $4, $6, $2, yylineno, token_start_column);
+    }
     ;
 
 auxiliary_declaration:
@@ -212,6 +214,27 @@ enum_value:
     INSTANCIA {
         // symbolTable.addEnumValueToCurrentEnum($1, yylineno, token_start_column);
     };
+
+external_relation_declaration:
+    AT ESTERIOTIPO_RELACAO NOME_DE_RELACAO NOME_DE_CLASSE cardinality RELATION_KEYWORD cardinality NOME_DE_CLASSE {
+        // symbolTable.addExternalRelation($3, $2, $4, $5, $7, yylineno, token_start_column);
+    };
+
+cardinality:
+    LEFT_SQUARE_BRACKETS cardinality_index RIGHT_SQUARE_BRACKETS {
+        // $$ = $2;
+    } 
+    ;
+
+cardinality_index:
+    NUMERO |
+    NUMERO DOUBLEDOT right_cardinality
+    ;
+
+right_cardinality:
+    NUMERO |
+    ASTERISK
+    ;
 
 
 
