@@ -18,12 +18,18 @@ struct DataType {
     vector<Attribute> attributes;
 };
 
-struct Relation {
+struct InternalRelation {
     string name;
     string stereotype;
-    string relationType;
-    string classType;
     string otherClass;
+    string cardinality;
+};
+
+struct ExternalRelation {
+    string name;
+    string stereotype;
+    string sourceClass;
+    string targetClass;
     string cardinality;
 };
 
@@ -44,7 +50,7 @@ struct Class {
     string stereotype;
     vector<string> parentClasses;
     vector<Attribute> attributes;
-    vector<Relation> relations;
+    vector<InternalRelation> relations;
     int line;
     int column;
 };
@@ -56,6 +62,7 @@ struct Package {
     vector<Enumeration> enumerations;
     vector<DataType> dataTypes;
     vector<Enumeration> enums;
+    vector<ExternalRelation> externalRelations;
 };
 
 struct SyntaxError {
@@ -86,7 +93,7 @@ public:
     void addClass(const string& name, const string& stereotype, int line, int col);
     bool checkClassExists(const string& name);
     void addAttributeToCurrentClass(const string& name, const string& type, const string& meta);
-    void addInternalRelationToCurrentClass(const string& target, const string& card, const string& name, const string& stereo, const string& relType);
+    void addInternalRelationToCurrentClass(const string& target, const string& card, const string& name, const string& stereo);
 
     // Métodos para DataTypes
     void addDataType(const string& name, int line, int col);
@@ -97,7 +104,7 @@ public:
     void addEnumValueToCurrentEnum(const string& literal);
 
     // Métodos para Relações Externas e Generalizações
-    void addExternalRelation(const string& name, const string& stereo, const string& source, const string& target, const string& card, int line, int col);
+    void addExternalRelation(const string& name, const string& stereo, const string& source, const string& cardSource, const string& cardTarget, const string& target, int line, int col);
     
     // Adiciona um GenSet completo (usado quando a regra do parser fecha o bloco genset)
     void addGeneralization(const string& name, const string& restrictions, const string& parent, const vector<string>& children, int line, int col);
@@ -107,3 +114,5 @@ public:
     const vector<SyntaxError>& getErrors() const { return errors; }
 
 };
+
+#endif // SYNTHESIS_TABLE_H
