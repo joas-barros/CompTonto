@@ -12,6 +12,7 @@ extern int yylex();
 extern int yylineno;
 extern int token_start_column; 
 extern char* yytext;
+extern FILE* yyin; 
 
 void yyerror(const char *s);
 
@@ -101,7 +102,7 @@ class_declaration:
     ESTERIOTIPO_CLASSE NOME_DE_CLASSE LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS {
         // symbolTable.addClass($2, $1, yylineno, token_start_column);
     } |
-    ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES NOME_DE_CLASSE {
+    ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES image_classes {
     }
     ;
 
@@ -184,8 +185,9 @@ external_relation_declaration:
 
 cardinality:
     LEFT_SQUARE_BRACKETS cardinality_index RIGHT_SQUARE_BRACKETS {
-        // $$ = $2;
-    } 
+    } |
+    /* empty */
+
     ;
 
 cardinality_index:
@@ -225,7 +227,7 @@ domain_classes:
     NOME_DE_CLASSE;
 
 block_generalization_declaration:
-    GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS generalization_body RIGHT_CURLY_BRACKETS {
+    generalization_restrictions GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS generalization_body RIGHT_CURLY_BRACKETS {
         // symbolTable.addGeneralization($2, "", "", "", yylineno, token_start_column);
     }
     ;
@@ -273,9 +275,42 @@ void yyerror(const char *s) {
 }
 
 
-int main() {
-    yyparse();
-    
-    generateReport();
-    return 0;
+int main(int argc, char** argv) {
+    // 1. Verificação de argumentos
+    if (argc < 2) {
+        cerr << RED_TEXT << "Erro: Nenhum arquivo de entrada fornecido." << RESET_COLOR << endl;
+        cerr << "Uso: ./comptonto <caminho_do_arquivo>" << endl;
+        return 1;
+    }
+
+    // 2. Tentar abrir o arquivo
+    FILE* arquivo = fopen(argv[1], "r");
+    if (!arquivo) {
+        cerr << RED_TEXT << "Erro: Não foi possível abrir o arquivo '" << argv[1] << "'." << RESET_COLOR << endl;
+        return 1;
+    }
+
+    // 3. Direcionar o Flex para ler deste arquivo
+    yyin = arquivo;
+
+    // 4. Executar o Parser e capturar o resultado
+    // yyparse retorna 0 em sucesso, 1 em caso de erro sintático
+    int resultado = yyparse();
+
+    // 5. Fechar o arquivo
+    fclose(arquivo);
+
+    // 6. Verificar validade
+    if (resultado == 0) {
+        // Se chegou aqui, a gramática aceitou o arquivo inteiro
+        cout << GREEN_TEXT << "\n[SUCESSO] O arquivo '" << argv[1] << "' é VÁLIDO segundo a gramática!" << RESET_COLOR << endl;
+        generateReport(); // Gera os relatórios apenas se for válido (opcional)
+    } else {
+        // Se houve erro, o yyerror já imprimiu a mensagem de erro específica
+        cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
+        // Opcional: Você pode querer gerar o relatório de erros léxicos mesmo assim
+        // fileGenerator.generateErrorReport("output/error_report.txt");
+    }
+
+    return resultado;
 }
