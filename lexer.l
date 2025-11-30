@@ -41,7 +41,27 @@ esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|h
 
 esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
 
-palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes|intrinsic-modes
+//palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes|intrinsic-modes
+
+import import
+
+package package
+
+disjoint disjoint
+
+complete complete
+
+general general
+
+specializes specializes
+
+specifics specifics
+
+where where
+
+genset genset
+
+enum enum
 
 dados_nativos number|string|boolean|date|time|datetime
 

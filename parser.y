@@ -27,6 +27,18 @@ FileGenerator fileGenerator(symbolTable);
 }
 
 %token PALAVRA_RESERVADA
+
+%token IMPORT
+%token PACKAGE
+%token GENSET
+%token DISJOINT
+%token COMPLETE
+%token GENERAL
+%token SPECIFICS
+%token SPECIALIZES
+%token WHERE
+%token ENUM
+
 %token DADO_NATIVO
 %token META_ATRIBUTO
 %token ESTERIOTIPO_CLASSE
@@ -37,6 +49,20 @@ FileGenerator fileGenerator(symbolTable);
 %token INSTANCIA
 %token NUMERO
 %token SIMBOLO
+
+%token RIGHT_BRACES
+%token LEFT_BRACES
+%token RIGHT_CURLY_BRACKETS
+%token LEFT_CURLY_BRACKETS
+%token RIGHT_SQUARE_BRACKETS
+%token LEFT_SQUARE_BRACKETS
+%token COMMA
+%token AT
+%token RELATION_KEYWORD
+%token COLON
+%token TWO_DOTS
+%token ASTERISK
+
 %token NAO_IDENTIFICADO
 
 %%
@@ -60,7 +86,9 @@ statement:
     | NOME_DE_CLASSE { 
         cout << "Parser reconheceu uma classe: " << $1 << endl;
     }
-    | NOME_DE_RELACAO
+    | NOME_DE_RELACAO { 
+        cout << "Parser reconheceu uma relação: " << $1 << endl;
+    }
     | INSTANCIA
     | NUMERO
     | SIMBOLO
