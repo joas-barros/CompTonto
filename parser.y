@@ -38,6 +38,7 @@ FileGenerator fileGenerator(symbolTable);
 %token SPECIALIZES
 %token WHERE
 %token ENUM
+%token RELATION
 
 %token DADO_NATIVO
 %token META_ATRIBUTO
@@ -48,10 +49,9 @@ FileGenerator fileGenerator(symbolTable);
 %token <sval> NOME_DE_RELACAO
 %token INSTANCIA
 %token NUMERO
-%token SIMBOLO
 
-%token RIGHT_BRACES
-%token LEFT_BRACES
+%token RIGHT_PARENTHESIS
+%token LEFT_PARENTHESIS
 %token RIGHT_CURLY_BRACKETS
 %token LEFT_CURLY_BRACKETS
 %token RIGHT_SQUARE_BRACKETS
@@ -60,7 +60,7 @@ FileGenerator fileGenerator(symbolTable);
 %token AT
 %token RELATION_KEYWORD
 %token COLON
-%token TWO_DOTS
+%token DOUBLEDOT
 %token ASTERISK
 
 %token NAO_IDENTIFICADO
@@ -78,6 +78,17 @@ statements:
 
 statement:
     PALAVRA_RESERVADA
+    | IMPORT
+    | PACKAGE
+    | GENSET
+    | DISJOINT
+    | COMPLETE
+    | GENERAL
+    | SPECIFICS
+    | SPECIALIZES
+    | WHERE
+    | ENUM
+    | RELATION
     | DADO_NATIVO
     | META_ATRIBUTO
     | ESTERIOTIPO_CLASSE
@@ -91,7 +102,18 @@ statement:
     }
     | INSTANCIA
     | NUMERO
-    | SIMBOLO
+    | RIGHT_PARENTHESIS
+    | LEFT_PARENTHESIS
+    | RIGHT_CURLY_BRACKETS
+    | LEFT_CURLY_BRACKETS
+    | RIGHT_SQUARE_BRACKETS
+    | LEFT_SQUARE_BRACKETS
+    | COMMA
+    | AT
+    | RELATION_KEYWORD
+    | COLON
+    | DOUBLEDOT
+    | ASTERISK
     ;
 
 %%

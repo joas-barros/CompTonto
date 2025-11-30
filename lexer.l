@@ -41,7 +41,7 @@ esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|h
 
 esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
 
-//palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes|intrinsic-modes
+palavras_reservadas functional-complexes|intrinsic-modes
 
 import import
 
@@ -63,6 +63,8 @@ genset genset
 
 enum enum
 
+relation relation
+
 dados_nativos number|string|boolean|date|time|datetime
 
 meta_atributos ordered|const|derived|subsets|redefines
@@ -82,6 +84,28 @@ novos_tipos {letter}+DataType
 \n                  { yycolumn = 1; }
 
 {palavras_reservadas} {return processToken(PALAVRA_RESERVADA);}
+
+{import}            {return processToken(IMPORT);}
+
+{package}           {return processToken(PACKAGE);}
+
+{disjoint}          {return processToken(DISJOINT);}
+
+{complete}          {return processToken(COMPLETE);}
+
+{general}           {return processToken(GENERAL);}
+
+{specializes}       {return processToken(SPECIALIZES);}
+
+{specifics}         {return processToken(SPECIFICS);}
+
+{where}             {return processToken(WHERE);}
+
+{genset}            {return processToken(GENSET);}
+
+{enum}              {return processToken(ENUM);}
+
+{relation}         {return processToken(RELATION);}
 
 {dados_nativos}     {return processToken(DADO_NATIVO);}
 
@@ -107,20 +131,24 @@ novos_tipos {letter}+DataType
 
 {number}            {return processToken(NUMERO);}
 
-"{"         |
-"}"         |
-"("         |
-")"         |
-"["         |
-"]"         |
-".."        |
+"{"        { return processToken(LEFT_CURLY_BRACKETS); }
+"}"        { return processToken(RIGHT_CURLY_BRACKETS); }
+"("        { return processToken(LEFT_PARENTHESIS); }
+")"        { return processToken(RIGHT_PARENTHESIS); }
+"["        { return processToken(LEFT_SQUARE_BRACKETS); }
+"]"        { return processToken(RIGHT_SQUARE_BRACKETS); }
+".."       { return processToken(DOUBLEDOT); }
+
 "<>--"      |
 "--<>"      |
-"*"         |
-"@"         |
-":"         |
-","         |
-"--"        { return processToken(SIMBOLO); }
+"--<o>"     |
+"<o>--"     |
+"--"        { return processToken(RELATION_KEYWORD); }
+
+"*"        { return processToken(ASTERISK); }
+"@"        { return processToken(AT); }
+":"        { return processToken(COLON); }
+","        { return processToken(COMMA); }
 
 .                   { 
                       token_start_column = yycolumn; 
