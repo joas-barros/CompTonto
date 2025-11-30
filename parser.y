@@ -76,12 +76,19 @@ FileGenerator fileGenerator(symbolTable);
 %%
 
 ontology:
-    package_declaration body
+    import_declaration package_declaration body |
+    package_declaration body 
     ;
 
 package_declaration:
     PACKAGE NOME_DE_CLASSE { 
         // symbolTable.setCurrentPackage($2);
+    }
+    ;
+
+import_declaration:
+    IMPORT NOME_DE_CLASSE {
+        // symbolTable.addImport($2, yylineno, token_start_column);
     }
     ;
 
