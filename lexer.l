@@ -65,6 +65,8 @@ enum enum
 
 relation relation
 
+datatype datatype
+
 dados_nativos number|string|boolean|date|time|datetime
 
 meta_atributos ordered|const|derived|subsets|redefines
@@ -106,6 +108,8 @@ novos_tipos {letter}+DataType
 {enum}              {return processToken(ENUM);}
 
 {relation}         {return processToken(RELATION);}
+
+{datatype}          {return processToken(DATATYPE);}
 
 {dados_nativos}     {return processToken(DADO_NATIVO);}
 

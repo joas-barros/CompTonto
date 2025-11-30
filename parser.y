@@ -39,6 +39,7 @@ FileGenerator fileGenerator(symbolTable);
 %token WHERE
 %token ENUM
 %token RELATION
+%token DATATYPE
 
 %token DADO_NATIVO
 %token META_ATRIBUTO
@@ -67,7 +68,7 @@ FileGenerator fileGenerator(symbolTable);
 
 %%
 
-programa:
+/* programa:
     statements
     ;
 
@@ -114,7 +115,105 @@ statement:
     | COLON
     | DOUBLEDOT
     | ASTERISK
+    ; */
+
+ontology:
+    package_declaration body
     ;
+
+package_declaration:
+    PACKAGE NOME_DE_CLASSE { 
+        // symbolTable.setCurrentPackage($2);
+    }
+    ;
+
+body:
+    statements |
+    statements body
+    ;
+
+statements:
+    class_declaration |
+    auxiliary_declaration
+    ;
+
+class_declaration:
+    ESTERIOTIPO_CLASSE NOME_DE_CLASSE {
+        // symbolTable.addClass($2, $1, yylineno, token_start_column);
+    } |
+    ESTERIOTIPO_CLASSE NOME_DE_CLASSE LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS {
+        // symbolTable.addClass($2, $1, yylineno, token_start_column);
+    }
+    ;
+
+class_body:
+    class_body_element |
+    class_body_element class_body
+    ;
+
+class_body_element:
+    attributes_declaration class_body_element |
+    internal_relation_declaration class_body_element |
+    attributes_declaration |
+    internal_relation_declaration
+    ;
+
+attributes_declaration:
+    attribute_declaration |
+    attribute_declaration attributes_declaration
+    ;
+
+attribute_declaration:
+    NOME_DE_RELACAO COLON DADO_NATIVO {
+        // symbolTable.addAttributeToCurrentClass($1, $3, "", yylineno, token_start_column);
+    } |
+
+    NOME_DE_RELACAO COLON NOVO_TIPO {
+        // symbolTable.addAttributeToCurrentClass($1, $3, "", yylineno, token_start_column);
+    } |
+
+    NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
+        // symbolTable.addAttributeToCurrentClass($1, $3, $5, yylineno, token_start_column);
+    } |
+
+    NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
+        // symbolTable.addAttributeToCurrentClass($1, $3, $5, yylineno, token_start_column);
+    }
+    ;
+
+internal_relation_declaration:
+    // TODO
+    ;
+
+auxiliary_declaration:
+    data_type_declaration |
+    enum_declaration |
+    external_relation_declaration |
+    generalization_declaration
+    ;
+
+data_type_declaration:
+    DATATYPE NOME_DE_CLASSE LEFT_CURLY_BRACKETS attributes_declaration RIGHT_CURLY_BRACKETS {
+        // symbolTable.addDataType($2, yylineno, token_start_column);
+    };
+
+enum_declaration:
+    ENUM NOME_DE_CLASSE LEFT_CURLY_BRACKETS enum_body RIGHT_CURLY_BRACKETS {
+        // symbolTable.addEnum($2, yylineno, token_start_column);
+    }
+    ;
+
+enum_body:
+    enum_value |
+    enum_value COMMA enum_body
+    ;
+
+enum_value:
+    INSTANCIA {
+        // symbolTable.addEnumValueToCurrentEnum($1, yylineno, token_start_column);
+    };
+
+
 
 %%
 

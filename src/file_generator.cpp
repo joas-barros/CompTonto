@@ -19,6 +19,7 @@ string getTokenName(int token) {
         case WHERE:            return "WHERE";
         case ENUM:             return "ENUM";
         case RELATION:         return "RELATION";
+        case DATATYPE:         return "DATATYPE";
         case GENSET :          return "GENSET";
         case DISJOINT:         return "DISJOINT";
         case COMPLETE:         return "COMPLETE";
