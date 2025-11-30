@@ -236,6 +236,54 @@ right_cardinality:
     ASTERISK
     ;
 
+generalization_declaration:
+    inline_generalization_declaration |
+    block_generalization_declaration
+    ;
+
+inline_generalization_declaration:
+    generalization_restrictions GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES doamin_classes {
+        // symbolTable.addGeneralization($3, $1, $5, $7, yylineno, token_start_column);
+    }
+    ;
+
+generalization_restrictions:
+    DISJOINT |
+    COMPLETE |
+    DISJOINT COMPLETE |
+    COMPLETE DISJOINT |
+    /* empty */
+    ;
+
+image_classes:
+    NOME_DE_CLASSE |
+    NOME_DE_CLASSE COMMA image_classes
+    ;
+
+doamin_classes:
+    NOME_DE_CLASSE;
+
+block_generalization_declaration:
+    GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS generalization_body RIGHT_CURLY_BRACKETS {
+        // symbolTable.addGeneralization($2, "", "", "", yylineno, token_start_column);
+    }
+    ;
+
+generalization_body:
+    generalization_body_domain generalization_body_image 
+    ;
+
+generalization_body_domain:
+    GENERAL NOME_DE_CLASSE {
+        // symbolTable.addGeneralizationDomain($2, yylineno, token_start_column);
+    }
+    ;
+
+generalization_body_image:
+    SPECIFICS image_classes {
+        // symbolTable.addGeneralizationImage($2, yylineno, token_start_column);
+    }
+    ;
 
 
 %%
