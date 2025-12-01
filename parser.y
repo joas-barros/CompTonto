@@ -342,7 +342,7 @@ void generateReport() {
 
     cout << "Gerando relatórios da análise sintática..." << endl;
     fileGenerator.generateSynthesisTableJson("output/syntatical/synthesis_table.json");
-    fileGenerator.generateSyntacticalReport("output/syntatical/syntactical_report.txt");
+    fileGenerator.generateSynthesisReport("output/syntatical/syntactical_report.txt");
 }
 
 void yyerror(const char *s) {
@@ -381,16 +381,11 @@ int main(int argc, char** argv) {
     fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
     fileGenerator.generateErrorReport("output/lexical/error_report.txt");
 
-    // 6. Verificar validade
     if (resultado == 0) {
-        // Se chegou aqui, a gramática aceitou o arquivo inteiro
         cout << GREEN_TEXT << "\n[SUCESSO] O arquivo '" << argv[1] << "' é VÁLIDO segundo a gramática!" << RESET_COLOR << endl;
-        generateReport(); // Gera os relatórios apenas se for válido (opcional)
+        generateReport(); 
     } else {
-        // Se houve erro, o yyerror já imprimiu a mensagem de erro específica
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
-        // Opcional: Você pode querer gerar o relatório de erros léxicos mesmo assim
-        // fileGenerator.generateErrorReport("output/error_report.txt");
     }
 
     return resultado;
