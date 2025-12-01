@@ -1,9 +1,8 @@
 %{
 #include <iostream>
-#include "tokens.h"
 #include "symbol_table.h"
 #include "colors.h"
-#include "file_generator.h"
+#include "parser.hpp"
 
 
 using namespace std;
@@ -13,12 +12,17 @@ int yycolumn = 1;
 int token_start_column = 1; 
 
 // Tabela de símbolos
-SymbolTable symbolTable;
+extern SymbolTable symbolTable;
 
-// Gerador de arquivo
-FileGenerator fileGenerator(symbolTable);
-
-void generateReport();
+int processToken(int tokenType) {
+    token_start_column = yycolumn;
+    yycolumn += yyleng;
+    
+    
+    symbolTable.addSymbol(yytext, tokenType, yylineno, token_start_column);
+    
+    return tokenType;
+}
 
 %}
 
@@ -33,11 +37,39 @@ upper [A-Z]
 lower [a-z]
 number {digit}+(\.{digit}+)?(E[+-]?{digit}+)?
 
-esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|historicalMixin|kind|collective|quantity|quality|mode|intrisicMode|extrinsicMode|subkind|phase|role|historicalRole|relator
+esteriotipo_classe event|situation|process|category|mixin|phaseMixin|roleMixin|historicalMixin|kind|collective|quantity|quality|mode|intrisicMode|extrinsicMode|subkind|phase|role|historicalRole|relator|type
 
-esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
+esteriotipo_relacao material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution|subCategoryOf
 
-palavras_reservadas genset|disjoint|complete|general|specifies|where|package|import|functional-complexes|intrinsic-modes
+palavras_reservadas functional-complexes|intrinsic-modes
+
+import import
+
+package package
+
+disjoint disjoint
+
+complete complete
+
+general general
+
+overlapping overlapping
+
+incomplete incomplete
+
+specializes specializes
+
+specifics specifics
+
+where where
+
+genset genset
+
+enum enum
+
+relation relation
+
+datatype datatype
 
 dados_nativos number|string|boolean|date|time|datetime
 
@@ -57,151 +89,79 @@ novos_tipos {letter}+DataType
 
 \n                  { yycolumn = 1; }
 
-{palavras_reservadas} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return PALAVRA_RESERVADA;
+{palavras_reservadas} {return processToken(PALAVRA_RESERVADA);}
 
-                        }
+{import}            {return processToken(IMPORT);}
 
-{dados_nativos}     {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return DADO_NATIVO;
-                    }
+{package}           {return processToken(PACKAGE);}
 
-{meta_atributos}    {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return META_ATRIBUTO;
-                    }
+{disjoint}          {return processToken(DISJOINT);}
 
-{esteriotipo_classe} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return ESTERIOTIPO_CLASSE;
-                    }
+{complete}          {return processToken(COMPLETE);}
 
-{esteriotipo_relacao} {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return ESTERIOTIPO_RELACAO;
-                    }
+{general}           {return processToken(GENERAL);}
 
-{novos_tipos}       {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOVO_TIPO;
-                    }
+{overlapping}       {return processToken(OVERLAPPING);}
+
+{incomplete}        {return processToken(INCOMPLETE);}
+
+{specializes}       {return processToken(SPECIALIZES);}
+
+{specifics}         {return processToken(SPECIFICS);}
+
+{where}             {return processToken(WHERE);}
+
+{genset}            {return processToken(GENSET);}
+
+{enum}              {return processToken(ENUM);}
+
+{relation}         {return processToken(RELATION);}
+
+{datatype}          {return processToken(DATATYPE);}
+
+{dados_nativos}     { yylval.sval = strdup(yytext); return processToken(DADO_NATIVO);}
+    
+{meta_atributos}    { yylval.sval = strdup(yytext); return processToken(META_ATRIBUTO);}
+
+{esteriotipo_classe} { yylval.sval = strdup(yytext); return processToken(ESTERIOTIPO_CLASSE);}
+
+{esteriotipo_relacao} { yylval.sval = strdup(yytext); return processToken(ESTERIOTIPO_RELACAO);}
+
+{novos_tipos}       { yylval.sval = strdup(yytext); return processToken(NOVO_TIPO);}
 
 {nome_de_classe}    {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOME_DE_CLASSE;
+                        yylval.sval = strdup(yytext); 
+                        return processToken(NOME_DE_CLASSE);
                     }
 
 {nome_de_relacao}   {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return NOME_DE_RELACAO;
+                        yylval.sval = strdup(yytext);
+                        return processToken(NOME_DE_RELACAO);
                     }
 
-{instancias}        {
-                        token_start_column = yycolumn;
-                        yycolumn += yyleng;
-                        return INSTANCIA;
-                    }
+{instancias}        { yylval.sval = strdup(yytext); return processToken(INSTANCIA);}
 
+{number}            { yylval.sval = strdup(yytext);
+                    return processToken(NUMERO);}
 
-{number}            {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return NUMERO;
-                    }
+"{"        { return processToken(LEFT_CURLY_BRACKETS); }
+"}"        { return processToken(RIGHT_CURLY_BRACKETS); }
+"("        { return processToken(LEFT_PARENTHESIS); }
+")"        { return processToken(RIGHT_PARENTHESIS); }
+"["        { return processToken(LEFT_SQUARE_BRACKETS); }
+"]"        { return processToken(RIGHT_SQUARE_BRACKETS); }
+".."       { return processToken(DOUBLEDOT); }
 
-"{"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
+"<>--"      { return processToken(LEFT_AGGREGATION_ARROW); }
+"--<>"      { return processToken(RIGHT_AGGREGATION_ARROW); }
+"--<o>"     { return processToken(RIGHT_COMPOSITION_ARROW); }
+"<o>--"     { return processToken(LEFT_COMPOSITION_ARROW); }
+"--"        { return processToken(GENERAL_RELATION_ARROW); }
 
-"}"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"("                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-")"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"["                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"]"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-".."               {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"<>--"             {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"--<>"             {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"*"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"@"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-":"                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-","                {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
-
-"--"               {
-                    token_start_column = yycolumn;
-                    yycolumn += yyleng;
-                    return SIMBOLO;
-                    }
+"*"        { yylval.sval = strdup("*"); return processToken(ASTERISK); }
+"@"        { return processToken(AT); }
+":"        { return processToken(COLON); }
+","        { return processToken(COMMA); }
 
 .                   { 
                       token_start_column = yycolumn; 
@@ -210,25 +170,3 @@ novos_tipos {letter}+DataType
                       return NAO_IDENTIFICADO;
                    }
 %%
-
-int main() {
-   yyFlexLexer lexer;
-   int lookahead;
-
-   while ((lookahead = lexer.yylex()) != 0) {
-        symbolTable.addSymbol(lexer.YYText(), lookahead, lexer.lineno(), token_start_column);
-   }
-
-   generateReport();
-   return 0;
-}
-
-void generateReport() {
-    fileGenerator.generateSymbolTableJson("output/symbol_table.json");
-    fileGenerator.generateSymbolReport("output/symbol_report.txt");
-    fileGenerator.generateErrorReport("output/error_report.txt");
-
-    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
-    cout << GREEN_TEXT << "ANÁLISE LÉXICA CONCLUÍDA COM SUCESSO! \\O/" << RESET_COLOR << endl;
-    cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
-}
