@@ -1,9 +1,12 @@
 %{
 #include <iostream>
 #include <string>
+#include <cstring>
 #include "symbol_table.h"
+#include "synthesis_table.h"
 #include "file_generator.h"
 #include "colors.h"
+#include <vector>
 
 using namespace std;
 
@@ -18,14 +21,32 @@ void yyerror(const char *s);
 
 
 SymbolTable symbolTable;
+SynthesisTable synthesisTable;
 FileGenerator fileGenerator(symbolTable);
+
+char* copyString(const char* s) {
+    if (!s) return nullptr;
+    char* d = new char[strlen(s) + 1];
+    strcpy(d, s);
+    return d;
+}
 
 %}
 
 %union {
     char* sval; 
-    int ival;   
+    vector<string>* svec;
 }
+
+%type <svec> image_classes
+%type <sval> internal_relation_keyword
+%type <sval> cardinality
+%type <sval> cardinality_index
+%type <sval> right_cardinality
+%type <sval> generalization_restrictions
+%type <sval> domain_classes
+%type <sval> generalization_restriction_keyword
+
 
 %token PALAVRA_RESERVADA
 
@@ -34,6 +55,8 @@ FileGenerator fileGenerator(symbolTable);
 %token GENSET
 %token DISJOINT
 %token COMPLETE
+%token OVERLAPPING
+%token INCOMPLETE
 %token GENERAL
 %token SPECIFICS
 %token SPECIALIZES
@@ -42,15 +65,15 @@ FileGenerator fileGenerator(symbolTable);
 %token RELATION
 %token DATATYPE
 
-%token DADO_NATIVO
-%token META_ATRIBUTO
-%token ESTERIOTIPO_CLASSE
-%token ESTERIOTIPO_RELACAO
-%token NOVO_TIPO
+%token <sval> DADO_NATIVO
+%token <sval> META_ATRIBUTO
+%token <sval> ESTERIOTIPO_CLASSE
+%token <sval> ESTERIOTIPO_RELACAO
+%token <sval> NOVO_TIPO
 %token <sval> NOME_DE_CLASSE 
 %token <sval> NOME_DE_RELACAO
-%token INSTANCIA
-%token NUMERO
+%token <sval> INSTANCIA
+%token <sval> NUMERO
 
 %token RIGHT_PARENTHESIS
 %token LEFT_PARENTHESIS
@@ -69,7 +92,7 @@ FileGenerator fileGenerator(symbolTable);
 
 %token COLON
 %token DOUBLEDOT
-%token ASTERISK
+%token <sval> ASTERISK
 
 %token NAO_IDENTIFICADO
 
@@ -82,7 +105,7 @@ ontology:
 
 package_declaration:
     PACKAGE NOME_DE_CLASSE { 
-        // symbolTable.setCurrentPackage($2);
+        synthesisTable.setCurrentPackage($2);
     }
     ;
 
@@ -104,12 +127,14 @@ statements:
 
 class_declaration:
     ESTERIOTIPO_CLASSE NOME_DE_CLASSE {
-        // symbolTable.addClass($2, $1, yylineno, token_start_column);
+        synthesisTable.addClass($2, $1, yylineno, token_start_column);
     } |
     ESTERIOTIPO_CLASSE NOME_DE_CLASSE LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS {
-        // symbolTable.addClass($2, $1, yylineno, token_start_column);
+        synthesisTable.addClass($2, $1, yylineno, token_start_column);
     } |
     ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES image_classes {
+        synthesisTable.addClassWithParents($2, $1, *$4, yylineno, token_start_column);
+        delete $4;
     }
     ;
 
@@ -130,31 +155,31 @@ attributes_declaration:
 
 attribute_declaration:
     NOME_DE_RELACAO COLON DADO_NATIVO {
-        // symbolTable.addAttributeToCurrentClass($1, $3, "", yylineno, token_start_column);
+        synthesisTable.addAttribute($1, $3, "");
     } |
 
     NOME_DE_RELACAO COLON NOVO_TIPO {
-        // symbolTable.addAttributeToCurrentClass($1, $3, "", yylineno, token_start_column);
+        synthesisTable.addAttribute($1, $3, "");
     } |
 
     NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        // symbolTable.addAttributeToCurrentClass($1, $3, $5, yylineno, token_start_column);
+        synthesisTable.addAttribute($1, $3, $5);
     } |
 
     NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        // symbolTable.addAttributeToCurrentClass($1, $3, $5, yylineno, token_start_column);
+        synthesisTable.addAttribute($1, $3, $5);
     }
     ;
 
 internal_relation_declaration:
     AT ESTERIOTIPO_RELACAO cardinality internal_relation_keyword cardinality NOME_DE_CLASSE {
-        // symbolTable.addInternalRelationToCurrentClass($3, $4, $6, $2, yylineno, token_start_column);
+        synthesisTable.addInternalRelationToCurrentClass($6, $5, $3, $4, $2);
     }
     ;
 
 internal_relation_keyword:
-    relation_keyword |
-    relation_keyword NOME_DE_RELACAO GENERAL_RELATION_ARROW
+    relation_keyword  {$$ = copyString("");} |
+    relation_keyword NOME_DE_RELACAO GENERAL_RELATION_ARROW { $$ = $2; }
     ;
 
 auxiliary_declaration:
@@ -165,15 +190,14 @@ auxiliary_declaration:
     ;
 
 data_type_declaration:
-    DATATYPE NOME_DE_CLASSE LEFT_CURLY_BRACKETS attributes_declaration RIGHT_CURLY_BRACKETS {
-        // symbolTable.addDataType($2, yylineno, token_start_column);
-    };
+    DATATYPE NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
+        synthesisTable.addDataType($2, yylineno, token_start_column);
+    } attributes_declaration RIGHT_CURLY_BRACKETS;
 
 enum_declaration:
-    ENUM NOME_DE_CLASSE LEFT_CURLY_BRACKETS enum_body RIGHT_CURLY_BRACKETS {
-        // symbolTable.addEnum($2, yylineno, token_start_column);
-    }
-    ;
+    ENUM NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
+        synthesisTable.addEnumeration($2, yylineno, token_start_column);
+    } enum_body RIGHT_CURLY_BRACKETS;
 
 enum_body:
     enum_value |
@@ -182,29 +206,37 @@ enum_body:
 
 enum_value:
     INSTANCIA {
-        // symbolTable.addEnumValueToCurrentEnum($1, yylineno, token_start_column);
+        synthesisTable.addEnumValueToCurrentEnum($1);
     };
 
 external_relation_declaration:
     AT ESTERIOTIPO_RELACAO RELATION NOME_DE_RELACAO NOME_DE_CLASSE cardinality relation_keyword cardinality NOME_DE_CLASSE {
-        // symbolTable.addExternalRelation($3, $2, $4, $5, $7, yylineno, token_start_column);
+        synthesisTable.addExternalRelation($4, $2, $5, $6, $8, $9, yylineno, token_start_column);
     };
 
 cardinality:
     LEFT_SQUARE_BRACKETS cardinality_index RIGHT_SQUARE_BRACKETS {
-    } |
-    /* empty */
-
+        $$ = $2;
+    } | /* empty */ {
+       $$ = copyString("?");
+    }
     ;
 
 cardinality_index:
-    NUMERO |
-    NUMERO DOUBLEDOT right_cardinality
+    NUMERO {$$ = $1;} |
+    NUMERO DOUBLEDOT right_cardinality {
+        string s = string($1) + ".." + string($3);
+        $$ = copyString(s.c_str());
+    } 
     ;
 
 right_cardinality:
-    NUMERO |
-    ASTERISK
+    NUMERO {} {
+        $$ = $1;
+    } |
+    ASTERISK {
+        $$ = copyString("*");
+    }
     ;
 
 generalization_declaration:
@@ -214,30 +246,49 @@ generalization_declaration:
 
 inline_generalization_declaration:
     generalization_restrictions GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES domain_classes {
-        // symbolTable.addGeneralization($3, $1, $5, $7, yylineno, token_start_column);
+        synthesisTable.addGeneralizationFull($3, $1, $7, *$5, yylineno, token_start_column);
+        delete $5;
     }
     ;
 
 generalization_restrictions:
-    DISJOINT |
-    COMPLETE |
-    DISJOINT COMPLETE |
-    /* empty */
+    generalization_restriction_keyword {
+        $$ = $1;
+    } |
+    generalization_restriction_keyword generalization_restrictions {
+        string s = string($1) + " " + string($2);
+        $$ = copyString(s.c_str());
+    } | /* empty */ {
+        $$ = copyString("");
+    }
     ;
 
+generalization_restriction_keyword:
+    DISJOINT { $$ = copyString("disjoint"); } |
+    COMPLETE { $$ = copyString("complete"); } |
+    OVERLAPPING { $$ = copyString("overlapping"); } |
+    INCOMPLETE { $$ = copyString("incomplete"); };
+
 image_classes:
-    NOME_DE_CLASSE |
-    NOME_DE_CLASSE COMMA image_classes
+    NOME_DE_CLASSE {
+        $$ = new std::vector<string>();
+        $$->push_back($1);
+    } |
+    NOME_DE_CLASSE COMMA image_classes {
+        $$ = $3;
+        $$->insert($$->begin(), $1);
+    }
     ;
 
 domain_classes:
-    NOME_DE_CLASSE;
+    NOME_DE_CLASSE {
+        $$ = $1;
+    };
 
 block_generalization_declaration:
-    generalization_restrictions GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS generalization_body RIGHT_CURLY_BRACKETS {
-        // symbolTable.addGeneralization($2, "", "", "", yylineno, token_start_column);
-    }
-    ;
+    generalization_restrictions GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
+        synthesisTable.startGeneralizationBlock($3, $1, yylineno, token_start_column);
+    } generalization_body RIGHT_CURLY_BRACKETS;
 
 generalization_body:
     generalization_body_domain generalization_body_image 
@@ -245,13 +296,14 @@ generalization_body:
 
 generalization_body_domain:
     GENERAL NOME_DE_CLASSE {
-        // symbolTable.addGeneralizationDomain($2, yylineno, token_start_column);
+        synthesisTable.setGeneralizationParent($2);
     }
     ;
 
 generalization_body_image:
     SPECIFICS image_classes {
-        // symbolTable.addGeneralizationImage($2, yylineno, token_start_column);
+        synthesisTable.addGeneralizationChildren(*$2);
+        delete $2;
     }
     ;
 

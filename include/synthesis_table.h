@@ -22,7 +22,8 @@ struct InternalRelation {
     string name;
     string stereotype;
     string otherClass;
-    string cardinality;
+    string cardinalityTarget;
+    string cardinalitySource;
 };
 
 struct ExternalRelation {
@@ -30,7 +31,8 @@ struct ExternalRelation {
     string stereotype;
     string sourceClass;
     string targetClass;
-    string cardinality;
+    string cardinalityTarget;
+    string cardinalitySource;
 };
 
 struct Generalization {
@@ -82,22 +84,24 @@ private:
     Class* currentClass = nullptr;
     DataType* currentDataType = nullptr;
     Enumeration* currentEnum = nullptr;
+    Generalization* currentGeneralization = nullptr;
 
 public:
-    SymbolTable();
+    SynthesisTable();
 
     // Métodos de Controle de Contexto
     void setCurrentPackage(const string& name);
     
     // Métodos para Classes
     void addClass(const string& name, const string& stereotype, int line, int col);
+    void addClassWithParents(const string& name, const string& stereotype, const vector<string>& parents, int line, int col);
     bool checkClassExists(const string& name);
-    void addAttributeToCurrentClass(const string& name, const string& type, const string& meta);
-    void addInternalRelationToCurrentClass(const string& target, const string& card, const string& name, const string& stereo);
+    void addInternalRelationToCurrentClass(const string& target, const string& cardTarget, const string& cardSrc,const string& name, const string& stereo);
+
+    void addAttribute(const string& name, const string& type, const string& meta);
 
     // Métodos para DataTypes
     void addDataType(const string& name, int line, int col);
-    void addAttributeToCurrentDataType(const string& name, const string& type);
 
     // Métodos para Enums
     void addEnumeration(const string& name, int line, int col);
@@ -106,8 +110,13 @@ public:
     // Métodos para Relações Externas e Generalizações
     void addExternalRelation(const string& name, const string& stereo, const string& source, const string& cardSource, const string& cardTarget, const string& target, int line, int col);
     
-    // Adiciona um GenSet completo (usado quando a regra do parser fecha o bloco genset)
-    void addGeneralization(const string& name, const string& restrictions, const string& parent, const vector<string>& children, int line, int col);
+    // Generalization: Para Inline (Cria tudo de uma vez)
+    void addGeneralizationFull(const string& name, const string& restrictions, const string& parent, const vector<string>& children, int line, int col);
+
+    // Generalization: Para Block (Passo a passo)
+    void startGeneralizationBlock(const string& name, const string& restrictions, int line, int col);
+    void setGeneralizationParent(const string& parentName);
+    void addGeneralizationChildren(const vector<string>& children);
 
     // Getters
     const vector<Package>& getPackages() const { return packages; }

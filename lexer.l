@@ -53,6 +53,10 @@ complete complete
 
 general general
 
+overlapping overlapping
+
+incomplete incomplete
+
 specializes specializes
 
 specifics specifics
@@ -97,6 +101,10 @@ novos_tipos {letter}+DataType
 
 {general}           {return processToken(GENERAL);}
 
+{overlapping}       {return processToken(OVERLAPPING);}
+
+{incomplete}        {return processToken(INCOMPLETE);}
+
 {specializes}       {return processToken(SPECIALIZES);}
 
 {specifics}         {return processToken(SPECIFICS);}
@@ -111,15 +119,15 @@ novos_tipos {letter}+DataType
 
 {datatype}          {return processToken(DATATYPE);}
 
-{dados_nativos}     {return processToken(DADO_NATIVO);}
+{dados_nativos}     { yylval.sval = strdup(yytext); return processToken(DADO_NATIVO);}
+    
+{meta_atributos}    { yylval.sval = strdup(yytext); return processToken(META_ATRIBUTO);}
 
-{meta_atributos}    {return processToken(META_ATRIBUTO);}
+{esteriotipo_classe} { yylval.sval = strdup(yytext); return processToken(ESTERIOTIPO_CLASSE);}
 
-{esteriotipo_classe} {return processToken(ESTERIOTIPO_CLASSE);}
+{esteriotipo_relacao} { yylval.sval = strdup(yytext); return processToken(ESTERIOTIPO_RELACAO);}
 
-{esteriotipo_relacao} {return processToken(ESTERIOTIPO_RELACAO);}
-
-{novos_tipos}       {return processToken(NOVO_TIPO);}
+{novos_tipos}       { yylval.sval = strdup(yytext); return processToken(NOVO_TIPO);}
 
 {nome_de_classe}    {
                         yylval.sval = strdup(yytext); 
@@ -131,9 +139,10 @@ novos_tipos {letter}+DataType
                         return processToken(NOME_DE_RELACAO);
                     }
 
-{instancias}        {return processToken(INSTANCIA);}
+{instancias}        { yylval.sval = strdup(yytext); return processToken(INSTANCIA);}
 
-{number}            {return processToken(NUMERO);}
+{number}            { yylval.sval = strdup(yytext);
+                    return processToken(NUMERO);}
 
 "{"        { return processToken(LEFT_CURLY_BRACKETS); }
 "}"        { return processToken(RIGHT_CURLY_BRACKETS); }
@@ -149,7 +158,7 @@ novos_tipos {letter}+DataType
 "<o>--"     { return processToken(LEFT_COMPOSITION_ARROW); }
 "--"        { return processToken(GENERAL_RELATION_ARROW); }
 
-"*"        { return processToken(ASTERISK); }
+"*"        { yylval.sval = strdup("*"); return processToken(ASTERISK); }
 "@"        { return processToken(AT); }
 ":"        { return processToken(COLON); }
 ","        { return processToken(COMMA); }

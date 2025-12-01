@@ -1,5 +1,14 @@
 #include "synthesis_table.h"
 
+SynthesisTable::SynthesisTable() {
+    // Inicializa os ponteiros de contexto como nullptr
+    currentPackage = nullptr;
+    currentClass = nullptr;
+    currentDataType = nullptr;
+    currentEnum = nullptr;
+    currentGeneralization = nullptr;
+}
+
 void SynthesisTable::setCurrentPackage(const string& name) {
     // Procura se já existe
     for (auto& pkg : packages) {
@@ -55,15 +64,42 @@ void SynthesisTable::addClass(const string& name, const string& stereotype, int 
     currentEnum = nullptr;
 }
 
-void SynthesisTable::addAttributeToCurrentClass(const string& name, const string& type, const string& meta) {
-    if (!currentClass) return; // Erro silencioso ou logar erro de "Atributo fora de classe"
+void SynthesisTable::addClassWithParents(const string& name, const string& stereotype, const vector<string>& parents, int line, int col) {
+    addClass(name, stereotype, line, col);
 
-    Attribute attr;
-    attr.name = name;
-    attr.type = type;
-    attr.metaattribute = meta;
-    
-    currentClass->attributes.push_back(attr);
+    if (currentClass) {
+
+        currentClass->parentClasses = parents; 
+    }
+}
+
+void SynthesisTable::addAttribute(const string& name, const string& type, const string& meta) {
+    // Cenário 1: Estamos dentro de uma CLASSE
+    if (currentClass != nullptr) {
+        Attribute attr;
+        attr.name = name;
+        attr.type = type;
+        attr.metaattribute = meta;
+        currentClass->attributes.push_back(attr);
+        return;
+    }
+
+    // Cenário 2: Estamos dentro de um DATATYPE
+    if (currentDataType != nullptr) {
+        Attribute attr;
+        attr.name = name;
+        attr.type = type;
+        attr.metaattribute = meta;
+        currentDataType->attributes.push_back(attr);
+        return;
+    }
+
+    // Cenário 3: Atributo solto (Erro)
+    errors.push_back({
+        "Atributo '" + name + "' declarado fora de uma Classe ou DataType.",
+        "Mova este atributo para dentro de uma estrutura.", 
+        0, 0 
+    });
 }
 
 void SynthesisTable::addDataType(const string& name, int line, int col) {
@@ -86,17 +122,6 @@ void SynthesisTable::addDataType(const string& name, int line, int col) {
     currentEnum = nullptr;
 }
 
-void SynthesisTable::addAttributeToCurrentDataType(const string& name, const string& type) {
-    if (!currentDataType) return;
-
-    Attribute attr;
-    attr.name = name;
-    attr.type = type;
-    attr.metaattribute = ""; 
-
-    currentDataType->attributes.push_back(attr);
-}
-
 void SynthesisTable::addEnumeration(const string& name, int line, int col) {
     if (!currentPackage) return;
 
@@ -110,30 +135,16 @@ void SynthesisTable::addEnumeration(const string& name, int line, int col) {
 }
 
 void SynthesisTable::addEnumValueToCurrentEnum(const string& literal) {
-    if (!currentEnum) return;
-    currentEnum->literals.push_back(literal);
-}
-
-void SynthesisTable::addGeneralization(const string& name, const string& restrictions, const string& parent, const vector<string>& children, int line, int col) {
-    if (!currentPackage) return;
-
-    Generalization gen;
-    gen.name = name;
-    gen.restrictions = restrictions;
-    gen.parentClass = parent;
-    gen.childClasses = children;
-
-    currentPackage->generalizations.push_back(gen);
-    
-    // Validação Semântica Básica:
-    // Verificar se a classe Pai e as Filhas existem neste pacote
-    if (!checkClassExists(parent)) {
-        errors.push_back({"Classe pai '" + parent + "' não encontrada no genset '" + name + "'.", "Defina a classe antes de usar.", line, col});
+    if (currentEnum != nullptr) {
+        currentEnum->literals.push_back(literal);
+    } else {
+        // Opcional: Logar erro se tentar adicionar literal fora de enum
+        errors.push_back({"Literal de Enum '" + literal + "' perdido (contexto inválido).", "Verifique a sintaxe.", 0, 0});
     }
 }
 
 
-void SynthesisTable::addInternalRelationToCurrentClass(const string& target, const string& card, const string& name, const string& stereo) {
+void SynthesisTable::addInternalRelationToCurrentClass(const string& target, const string& cardTarget, const string& cardSrc,const string& name, const string& stereo) {
     // Segurança: só adiciona se estivermos lendo uma classe
     if (!currentClass) return;
 
@@ -141,7 +152,8 @@ void SynthesisTable::addInternalRelationToCurrentClass(const string& target, con
     rel.name = name;           
     rel.stereotype = stereo;   
     rel.otherClass = target;   
-    rel.cardinality = card;    
+    rel.cardinalityTarget = cardTarget;    
+    rel.cardinalitySource = cardSrc;
 
     currentClass->relations.push_back(rel);
 }
@@ -160,14 +172,51 @@ void SynthesisTable::addExternalRelation(const string& name, const string& stere
     rel.sourceClass = source;  
     rel.targetClass = target;  
 
-    // Formatação da cardinalidade para caber na string única
-    // Exemplo de formato: "[0..1] -> [1..*]"
-    // Se cardSource vier vazio, ajustamos a formatação
     string cSource = cardSource.empty() ? "?" : cardSource;
     string cTarget = cardTarget.empty() ? "?" : cardTarget;
     
-    rel.cardinality = "[" + cSource + "] -> [" + cTarget + "]";
+    rel.cardinalitySource = cSource;  
+    rel.cardinalityTarget = cTarget; 
 
     currentPackage->externalRelations.push_back(rel);
 }
 
+void SynthesisTable::addGeneralizationFull(const string& name, const string& restrictions, const string& parent, const vector<string>& children, int line, int col) {
+    if (!currentPackage) return;
+    
+    Generalization gen;
+    gen.name = name;
+    gen.restrictions = restrictions;
+    gen.parentClass = parent;
+    gen.childClasses = children;
+
+    currentPackage->generalizations.push_back(gen);
+}
+
+void SynthesisTable::startGeneralizationBlock(const string& name, const string& restrictions, int line, int col) {
+    if (!currentPackage) return;
+
+    Generalization gen;
+    gen.name = name;
+    gen.restrictions = restrictions;
+    
+    currentPackage->generalizations.push_back(gen);
+    
+    currentGeneralization = &currentPackage->generalizations.back();
+    
+    currentClass = nullptr;
+    currentDataType = nullptr;
+    currentEnum = nullptr;
+}
+
+void SynthesisTable::setGeneralizationParent(const string& parentName) {
+    if (currentGeneralization) {
+        currentGeneralization->parentClass = parentName;
+    }
+}
+
+void SynthesisTable::addGeneralizationChildren(const vector<string>& children) {
+    if (currentGeneralization) {
+        currentGeneralization->childClasses = children;
+    }
+}
