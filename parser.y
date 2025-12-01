@@ -42,10 +42,11 @@ char* copyString(const char* s) {
 %type <sval> internal_relation_keyword
 %type <sval> cardinality
 %type <sval> cardinality_index
-%type <sval> right_cardinality
+%type <sval> end_cardinality
 %type <sval> generalization_restrictions
 %type <sval> domain_classes
 %type <sval> generalization_restriction_keyword
+%type <sval> generalization_restrictions_opt
 
 
 %token PALAVRA_RESERVADA
@@ -147,18 +148,18 @@ class_body_opt:
 ;
 
 class_body:
-    class_body_element |
-    class_body_element class_body
+      /* empty */
+    | class_body class_body_element
     ;
 
 class_body_element:
-    attributes_declaration |
+    attribute_declaration |
     internal_relation_declaration
     ;
 
-attributes_declaration:
-    attribute_declaration |
-    attribute_declaration attributes_declaration
+attribute_list:
+      /* empty */
+    | attribute_list attribute_declaration
     ;
 
 attribute_declaration:
@@ -200,7 +201,7 @@ auxiliary_declaration:
 data_type_declaration:
     DATATYPE NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
         synthesisTable.addDataType($2, yylineno, token_start_column);
-    } attributes_declaration RIGHT_CURLY_BRACKETS;
+    } attribute_list RIGHT_CURLY_BRACKETS;
 
 enum_declaration:
     ENUM NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
@@ -213,7 +214,7 @@ enum_body:
     ;
 
 enum_value:
-    INSTANCIA {
+    NOME_DE_CLASSE {
         synthesisTable.addEnumValueToCurrentEnum($1);
     };
 
@@ -231,14 +232,14 @@ cardinality:
     ;
 
 cardinality_index:
-    NUMERO {$$ = $1;} |
-    NUMERO DOUBLEDOT right_cardinality {
+    end_cardinality |
+    NUMERO DOUBLEDOT end_cardinality {
         string s = string($1) + ".." + string($3);
         $$ = copyString(s.c_str());
     } 
     ;
 
-right_cardinality:
+end_cardinality:
     NUMERO {} {
         $$ = $1;
     } |
@@ -253,9 +254,17 @@ generalization_declaration:
     ;
 
 inline_generalization_declaration:
-    generalization_restrictions GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES domain_classes {
+    generalization_restrictions_opt GENSET NOME_DE_CLASSE WHERE image_classes SPECIALIZES domain_classes {
         synthesisTable.addGeneralizationFull($3, $1, $7, *$5, yylineno, token_start_column);
         delete $5;
+    }
+    ;
+
+generalization_restrictions_opt:
+      /* empty */ {
+        $$ = copyString("");}
+    | generalization_restrictions {
+        $$ = $1;
     }
     ;
 
@@ -266,10 +275,7 @@ generalization_restrictions:
     generalization_restriction_keyword generalization_restrictions {
         string s = string($1) + " " + string($2);
         $$ = copyString(s.c_str());
-    } | /* empty */ {
-        $$ = copyString("");
-    }
-    ;
+    };
 
 generalization_restriction_keyword:
     DISJOINT { $$ = copyString("disjoint"); } |
@@ -294,7 +300,7 @@ domain_classes:
     };
 
 block_generalization_declaration:
-    generalization_restrictions GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
+    generalization_restrictions_opt GENSET NOME_DE_CLASSE LEFT_CURLY_BRACKETS {
         synthesisTable.startGeneralizationBlock($3, $1, yylineno, token_start_column);
     } generalization_body RIGHT_CURLY_BRACKETS;
 
@@ -327,10 +333,10 @@ relation_keyword:
 %%
 
 void generateReport() {
-    fileGenerator.generateSymbolTableJson("output/symbol_table.json");
-    fileGenerator.generateSymbolReport("output/symbol_report.txt");
-    fileGenerator.generateErrorReport("output/error_report.txt");
-    fileGenerator.generateSynthesisTableJson("output/synthesis_table.json");
+    fileGenerator.generateSymbolTableJson("output/lexical/symbol_table.json");
+    fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
+    fileGenerator.generateErrorReport("output/lexical/error_report.txt");
+    fileGenerator.generateSynthesisTableJson("output/syntatical/synthesis_table.json");
 
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE SINTÁTICA CONCLUÍDA! \\O/" << RESET_COLOR << endl;

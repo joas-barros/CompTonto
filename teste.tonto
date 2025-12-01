@@ -1,18 +1,15 @@
-package School
+package LivingThings
 
-category LegalPerson
+kind Human
 
-kind Person specializes LegalPerson {
-    name: string
+enum Gender {
+  Male,
+  Female,
+  NonBinary,
+  Undetermined
 }
 
-kind Organization specializes LegalPerson
-
-subkind School specializes Organization
-
-phase LivingPerson specializes Person
-phase DeceasedPerson specializes Person
-
-role Student specializes LivingPerson
-
-@mediation relation Student [0..*] -- studiesIn -- [1..*] School
+subkind Person specializes Human {
+  name: string
+  age: number
+}
