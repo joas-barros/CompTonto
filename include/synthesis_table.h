@@ -76,6 +76,7 @@ struct SyntaxError {
 
 class SynthesisTable {
 private:
+    vector<string> imports;
     vector<Package> packages;
     vector<SyntaxError> errors;
 
@@ -91,6 +92,9 @@ public:
 
     // Métodos de Controle de Contexto
     void setCurrentPackage(const string& name);
+
+    // Métodos para Pacotes
+    void addImport(const string& importName);
     
     // Métodos para Classes
     void addClass(const string& name, const string& stereotype, int line, int col);
@@ -120,6 +124,7 @@ public:
 
     // Getters
     const vector<Package>& getPackages() const { return packages; }
+    const vector<string>& getImports() const { return imports; }
     const vector<SyntaxError>& getErrors() const { return errors; }
 
 };

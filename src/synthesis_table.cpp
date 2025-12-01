@@ -9,6 +9,10 @@ SynthesisTable::SynthesisTable() {
     currentGeneralization = nullptr;
 }
 
+void SynthesisTable::addImport(const string& importName) {
+    imports.push_back(importName);
+}
+
 void SynthesisTable::setCurrentPackage(const string& name) {
     // Procura se já existe
     for (auto& pkg : packages) {
@@ -220,3 +224,4 @@ void SynthesisTable::addGeneralizationChildren(const vector<string>& children) {
         currentGeneralization->childClasses = children;
     }
 }
+

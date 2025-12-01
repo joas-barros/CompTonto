@@ -100,9 +100,7 @@ char* copyString(const char* s) {
 %%
 
 ontology:
-    import_declaration package_declaration body |
-    package_declaration body 
-    ;
+    import_declaration package_declaration body;
 
 package_declaration:
     PACKAGE NOME_DE_CLASSE { 
@@ -111,10 +109,13 @@ package_declaration:
     ;
 
 import_declaration:
+     | 
+     import_declaration import;
+
+import:
     IMPORT NOME_DE_CLASSE {
-        // symbolTable.addImport($2, yylineno, token_start_column);
-    }
-    ;
+        synthesisTable.addImport($2);
+    };
 
 body:
     statements |

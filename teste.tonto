@@ -1,15 +1,27 @@
-package LivingThings
+import PersonAndOrganizationDatatypes
+import Person
+package University
 
-kind Human
-
-enum Gender {
-  Male,
-  Female,
-  NonBinary,
-  Undetermined
+kind University specializes Organization {
+  @componentOf [1] <o>-- has -- [2..*] Department
 }
 
-subkind Person specializes Human {
-  name: string
-  age: number
+@componentOf relation Department [1] -- [1] Staff
+
+kind Department {
+    @componentOf
+  [1] -- constitutedBy -- [1] Staff
+}
+collective Staff {
+  @memberOf [1..*] <>-- members -- [2..*] Employee
+}
+
+collective SeniorStaff {
+  @subCollectionOf [1] --<o> [1] Staff
+  @memberOf [1..*] <>-- professors -- [2..*] Department
+}
+
+relator EmploymentContract {
+  @mediation [*] -- [1] Employee
+  @mediation [1..*] -- [1] Employer
 }
