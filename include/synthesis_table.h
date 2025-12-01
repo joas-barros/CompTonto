@@ -137,6 +137,9 @@ public:
     size_t getNumberOfExternalRelations() const;
     size_t getNumberOfInternalRelations() const;
 
+    // Structure validator
+    void validateStructure();
+
 };
 
 #endif // SYNTHESIS_TABLE_H

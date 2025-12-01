@@ -380,6 +380,8 @@ int yyreport_syntax_error(const yypcontext_t *ctx) {
             cerr << yysymbol_name(expected[i]);
         }
         cerr << RESET_COLOR << endl;
+    } else {
+        cerr << "Nenhum token esperado disponível." << endl;
     }
     return 0;
 }

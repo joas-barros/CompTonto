@@ -276,3 +276,121 @@ size_t SynthesisTable::getNumberOfInternalRelations() const {
     return count;
 }
 
+void SynthesisTable::validateStructure() {
+    for (const auto& pkg : packages) {
+        
+        // --- 1. Validar Heranças e Relações das Classes ---
+        for (const auto& cls : pkg.classes) {
+            
+            // A. Validar Pais (Herança)
+            for (const string& parentName : cls.parentClasses) {
+                bool parentFound = false;
+                for (const auto& target : pkg.classes) {
+                    if (target.name == parentName) {
+                        parentFound = true;
+                        break;
+                    }
+                }
+                if (!parentFound) {
+                    errors.push_back({
+                        "Classe pai '" + parentName + "' não encontrada para a classe '" + cls.name + "'.",
+                        "Verifique se o nome está correto ou declare a classe.",
+                        cls.line, cls.column
+                    });
+                }
+            }
+
+            // B. Validar Relações Internas (Target)
+            for (const auto& rel : cls.relations) {
+                bool targetFound = false;
+                for (const auto& target : pkg.classes) {
+                    if (target.name == rel.otherClass) { // rel.otherClass é o destino
+                        targetFound = true;
+                        break;
+                    }
+                }
+                if (!targetFound) {
+                    errors.push_back({
+                        "A relação '" + rel.name + "' aponta para uma classe inexistente: '" + rel.otherClass + "'.",
+                        "Declare a classe destino.",
+                        cls.line, cls.column 
+                    });
+                }
+            }
+        }
+
+        // --- 2. Validar Generalizações (Gensets) ---
+        for (const auto& gen : pkg.generalizations) {
+            // Validar se o Pai existe
+            bool parentFound = false;
+            for (const auto& target : pkg.classes) {
+                if (target.name == gen.parentClass) {
+                    parentFound = true;
+                    break;
+                }
+            }
+            if (!parentFound) {
+                errors.push_back({
+                    "Genset '" + gen.name + "' refere-se a uma classe pai inexistente: '" + gen.parentClass + "'.",
+                    "Corrija o nome da classe general.",
+                    0, 0 
+                });
+            }
+
+            // Validar se os Filhos existem
+            for (const string& childName : gen.childClasses) {
+                bool childFound = false;
+                for (const auto& target : pkg.classes) {
+                    if (target.name == childName) {
+                        childFound = true;
+                        break;
+                    }
+                }
+                if (!childFound) {
+                    errors.push_back({
+                        "Genset '" + gen.name + "' refere-se a uma classe filha inexistente: '" + childName + "'.",
+                        "Corrija o nome da classe specific.",
+                        0, 0
+                    });
+                }
+            }
+        }
+
+        // --- 3. Validar Relações Externas ---
+        for (const auto& rel : pkg.externalRelations) {
+            
+            // A. Validar Classe de Origem (Source)
+            bool sourceFound = false;
+            for (const auto& cls : pkg.classes) {
+                if (cls.name == rel.sourceClass) { 
+                    sourceFound = true; 
+                    break; 
+                }
+            }
+            if (!sourceFound) {
+                errors.push_back({
+                    "Relação Externa '" + rel.name + "' tem origem inválida: '" + rel.sourceClass + "'.",
+                    "A classe de origem deve ser declarada neste pacote.",
+                    0, 0 
+                });
+            }
+
+            // B. Validar Classe de Destino (Target)
+            bool targetFound = false;
+            for (const auto& cls : pkg.classes) {
+                if (cls.name == rel.targetClass) { 
+                    targetFound = true; 
+                    break; 
+                }
+            }
+            if (!targetFound) {
+                errors.push_back({
+                    "Relação Externa '" + rel.name + "' tem destino inválido: '" + rel.targetClass + "'.",
+                    "A classe de destino deve ser declarada neste pacote.",
+                    0, 0
+                });
+            }
+        }
+    }
+}
+

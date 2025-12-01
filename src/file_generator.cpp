@@ -221,7 +221,7 @@ void FileGenerator::generateSynthesisTableJson(const string& filename) {
             fout << "\n            ],\n";
 
             // Relações Internas
-            fout << "            \"relations\": [\n";
+            fout << "            \"internal_relations\": [\n";
             bool firstRel = true;
             for (const auto& rel : cls.relations) {
                 if (!firstRel) fout << ",\n";
