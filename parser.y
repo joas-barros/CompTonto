@@ -218,7 +218,7 @@ enum_body:
     ;
 
 enum_value:
-    NOME_DE_CLASSE {
+    INSTANCIA {
         synthesisTable.addEnumValueToCurrentEnum($1);
     };
 
