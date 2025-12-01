@@ -127,6 +127,16 @@ public:
     const vector<string>& getImports() const { return imports; }
     const vector<SyntaxError>& getErrors() const { return errors; }
 
+    // Getters do relatorio de construtos
+    size_t getNumberOfPackages() const { return packages.size(); }
+    size_t getNumberOfImports() const { return imports.size(); }
+    size_t getNumberOfClasses() const;
+    size_t getNumberOfDataTypes() const;
+    size_t getNumberOfEnumerations() const;
+    size_t getNumberOfGeneralizations() const;
+    size_t getNumberOfExternalRelations() const;
+    size_t getNumberOfInternalRelations() const;
+
 };
 
 #endif // SYNTHESIS_TABLE_H

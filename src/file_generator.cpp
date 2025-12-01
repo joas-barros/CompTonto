@@ -342,3 +342,29 @@ void FileGenerator::generateSynthesisTableJson(const string& filename) {
 
     cout << YELLOW_TEXT << "Tabela de síntese exportada para " << filename << RESET_COLOR << endl;
 }
+
+void FileGenerator::generateSynthesisReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    fout << "RELATÓRIO DE ANÁLISE SINTÁTICA" << endl;
+    fout << "Resumos dos construtos da ontologia:" << endl;
+    fout << "==========================" << endl;
+
+    fout << "Total de imports: " << synthesisTable.getNumberOfImports() << endl;
+    fout << "Total de pacotes: " <<synthesisTable.getNumberOfPackages() << endl;
+    fout << "Total de classes: " << synthesisTable.getNumberOfClasses() << endl;
+    fout << "Total de data types: " << synthesisTable.getNumberOfDataTypes() << endl;
+    fout << "Total de enumerações: " << synthesisTable.getNumberOfEnumerations() << endl;
+    fout << "Total de generalizações: " << synthesisTable.getNumberOfGeneralizations() << endl;
+    fout << "Total de relações externas: " << synthesisTable.getNumberOfExternalRelations() << endl;
+    fout << "Total de relações internas: " << synthesisTable.getNumberOfInternalRelations() << endl;
+
+    fout << "==========================" << endl;
+    fout.close();
+
+    cout << YELLOW_TEXT << "Relatório da tabela de síntese gerado em " << filename << RESET_COLOR << endl;
+}

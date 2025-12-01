@@ -24,6 +24,7 @@ public:
     void generateSymbolReport(const string& filename);
     void generateErrorReport(const string& filename);
     void generateSynthesisTableJson(const string& filename);
+    void generateSynthesisReport(const string& filename);
 };
 
 #endif // FILE_GENERATOR_H

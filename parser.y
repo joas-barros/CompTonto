@@ -334,14 +334,15 @@ relation_keyword:
 %%
 
 void generateReport() {
-    fileGenerator.generateSymbolTableJson("output/lexical/symbol_table.json");
-    fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
-    fileGenerator.generateErrorReport("output/lexical/error_report.txt");
-    fileGenerator.generateSynthesisTableJson("output/syntatical/synthesis_table.json");
+    
 
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE SINTÁTICA CONCLUÍDA! \\O/" << RESET_COLOR << endl;
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
+
+    cout << "Gerando relatórios da análise sintática..." << endl;
+    fileGenerator.generateSynthesisTableJson("output/syntatical/synthesis_table.json");
+    fileGenerator.generateSyntacticalReport("output/syntatical/syntactical_report.txt");
 }
 
 void yyerror(const char *s) {
@@ -374,6 +375,11 @@ int main(int argc, char** argv) {
 
     // 5. Fechar o arquivo
     fclose(arquivo);
+
+    cout << "Gerando relatórios da análise léxica..." << endl;
+    fileGenerator.generateSymbolTableJson("output/lexical/symbol_table.json");
+    fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
+    fileGenerator.generateErrorReport("output/lexical/error_report.txt");
 
     // 6. Verificar validade
     if (resultado == 0) {

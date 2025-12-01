@@ -225,3 +225,54 @@ void SynthesisTable::addGeneralizationChildren(const vector<string>& children) {
     }
 }
 
+
+size_t SynthesisTable::getNumberOfClasses() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        count += pkg.classes.size();
+    }
+    return count;
+}
+
+size_t SynthesisTable::getNumberOfDataTypes() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        count += pkg.dataTypes.size();
+    }
+    return count;
+}
+
+size_t SynthesisTable::getNumberOfEnumerations() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        count += pkg.enumerations.size();
+    }
+    return count;
+}
+
+size_t SynthesisTable::getNumberOfGeneralizations() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        count += pkg.generalizations.size();
+    }
+    return count;
+}
+
+size_t SynthesisTable::getNumberOfExternalRelations() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        count += pkg.externalRelations.size();
+    }
+    return count;
+}
+
+size_t SynthesisTable::getNumberOfInternalRelations() const {
+    size_t count = 0;
+    for (const auto& pkg : packages) {
+        for (const auto& cls : pkg.classes) {
+            count += cls.relations.size();
+        }
+    }
+    return count;
+}
+
