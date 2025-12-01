@@ -33,6 +33,9 @@ char* copyString(const char* s) {
 
 %}
 
+%define parse.error custom
+%define parse.lac full
+
 %union {
     char* sval; 
     vector<string>* svec;
@@ -333,9 +336,7 @@ relation_keyword:
 
 %%
 
-void generateReport() {
-    
-
+void generateSyntacticalReport() {  
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE SINTÁTICA CONCLUÍDA! \\O/" << RESET_COLOR << endl;
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
@@ -345,9 +346,47 @@ void generateReport() {
     fileGenerator.generateSynthesisReport("output/syntatical/syntactical_report.txt");
 }
 
-void yyerror(const char *s) {
+void generateLexicalReport() {
+
+    cout << "Gerando relatórios da análise léxica..." << endl;
+    fileGenerator.generateSymbolTableJson("output/lexical/symbol_table.json");
+    fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
+    fileGenerator.generateErrorReport("output/lexical/lexical_error_report.txt");
+}
+
+int yyreport_syntax_error(const yypcontext_t *ctx) {
     cerr << RED_TEXT << "Erro de Sintaxe na linha " << yylineno 
-         << " coluna " << token_start_column << ": " << s << RESET_COLOR << endl;
+         << " coluna " << token_start_column << ":" << RESET_COLOR << endl;
+
+    // Token Inesperado
+    yysymbol_kind_t lookahead = yypcontext_token(ctx);
+    cerr << "Token inesperado: " << RED_TEXT << yysymbol_name(lookahead) << RESET_COLOR;
+    
+    // Imprime o lexema (o texto real) se aplicável
+    if (lookahead != YYSYMBOL_YYEMPTY && lookahead != YYSYMBOL_YYEOF) {
+        cerr << " (\"" << yytext << "\")";
+    }
+    cerr << endl;
+
+    // Tokens Esperados
+    enum { ARGS_MAX = 5 };
+    yysymbol_kind_t expected[ARGS_MAX];
+    int n = yypcontext_expected_tokens(ctx, expected, ARGS_MAX);
+
+    if (n > 0) {
+        cerr << "Possíveis tokens que poderiam vir em seguida: " << GREEN_TEXT;
+        for (int i = 0; i < n; ++i) {
+            if (i > 0) cerr << ", ";
+            cerr << yysymbol_name(expected[i]);
+        }
+        cerr << RESET_COLOR << endl;
+    }
+    return 0;
+}
+
+void yyerror(const char *s) {
+    // Caso o custom report falhe ou não seja chamado
+    cerr << RED_TEXT << "Erro fatal: " << s << RESET_COLOR << endl;
 }
 
 
@@ -376,14 +415,11 @@ int main(int argc, char** argv) {
     // 5. Fechar o arquivo
     fclose(arquivo);
 
-    cout << "Gerando relatórios da análise léxica..." << endl;
-    fileGenerator.generateSymbolTableJson("output/lexical/symbol_table.json");
-    fileGenerator.generateSymbolReport("output/lexical/symbol_report.txt");
-    fileGenerator.generateErrorReport("output/lexical/error_report.txt");
+    generateLexicalReport();
 
     if (resultado == 0) {
         cout << GREEN_TEXT << "\n[SUCESSO] O arquivo '" << argv[1] << "' é VÁLIDO segundo a gramática!" << RESET_COLOR << endl;
-        generateReport(); 
+        generateSyntacticalReport(); 
     } else {
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
     }

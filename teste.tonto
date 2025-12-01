@@ -1,27 +1,26 @@
 import PersonAndOrganizationDatatypes
-import Person
-package University
+import University
 
-kind University specializes Organization {
-  @componentOf [1] <o>-- has -- [2..*] Department
+package Person
+
+kind Person {
+  age: number { derived }
+  birthDate: date { const }
+  name: string
+  preferredNames: string { ordered }
+
+  @instantiation
+  [*] -- [1] PersonTypeByAge
 }
 
-@componentOf relation Department [1] -- [1] Staff
+type PersonTypeByAge
 
-kind Department {
-    @componentOf
-  [1] -- constitutedBy -- [1] Staff
-}
-collective Staff {
-  @memberOf [1..*] <>-- members -- [2..*] Employee
-}
+phase Child specializes Person
+phase Teenager specializes Person
+phase Adult specializes Person
 
-collective SeniorStaff {
-  @subCollectionOf [1] --<o> [1] Staff
-  @memberOf [1..*] <>-- professors -- [2..*] Department
-}
+roleMixin Employer specializes University
+role Employee specializes Person
+role Professor specializes Employee
 
-relator EmploymentContract {
-  @mediation [*] -- [1] Employee
-  @mediation [1..*] -- [1] Employer
-}
+role PhDCandidate specializes Person
