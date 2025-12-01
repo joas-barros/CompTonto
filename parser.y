@@ -344,6 +344,7 @@ void generateSyntacticalReport() {
     cout << "Gerando relatórios da análise sintática..." << endl;
     fileGenerator.generateSynthesisTableJson("output/syntatical/synthesis_table.json");
     fileGenerator.generateSynthesisReport("output/syntatical/syntactical_report.txt");
+    fileGenerator.generateSynthesisStructureReport("output/syntatical/syntactical_structure_report.txt");
 }
 
 void generateLexicalReport() {
@@ -421,6 +422,9 @@ int main(int argc, char** argv) {
 
     if (resultado == 0) {
         cout << GREEN_TEXT << "\n[SUCESSO] O arquivo '" << argv[1] << "' é VÁLIDO segundo a gramática!" << RESET_COLOR << endl;
+
+        synthesisTable.validateStructure(); 
+
         generateSyntacticalReport(); 
     } else {
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;

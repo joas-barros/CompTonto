@@ -25,6 +25,7 @@ public:
     void generateErrorReport(const string& filename);
     void generateSynthesisTableJson(const string& filename);
     void generateSynthesisReport(const string& filename);
+    void generateSynthesisStructureReport(const string& filename);
 };
 
 #endif // FILE_GENERATOR_H

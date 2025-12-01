@@ -368,3 +368,32 @@ void FileGenerator::generateSynthesisReport(const string& filename) {
 
     cout << YELLOW_TEXT << "Relatório da tabela de síntese gerado em " << filename << RESET_COLOR << endl;
 }
+
+
+void FileGenerator::generateSynthesisStructureReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    const auto& errors = synthesisTable.getErrors();
+    if (errors.empty()) {
+        fout << "Nenhum erro estrutural encontrado! :)" << endl;
+    } else {
+        cerr << RED_TEXT << errors.size() << " erros estruturais encontrados durante a validação." << RESET_COLOR << endl;
+        cerr << RED_TEXT << "Relatório de erros estruturais gerado em " << filename << RESET_COLOR << endl;
+        fout << "RELATÓRIO DE ERROS DE ESTRUTURA" << endl;
+        fout << "==========================" << endl;
+
+        for (const auto& err : errors) {
+            fout << "Erro: " << err.message << " Na linha " << err.line << ", coluna " << err.col << endl;
+            fout << "Sugestão: " << err.suggestion << endl;
+            fout << "--------------------------" << endl;
+        }
+
+        fout << "==========================" << endl;
+    }
+
+    fout.close();
+}
