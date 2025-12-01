@@ -1,51 +1,45 @@
-import CarRental 
+import PersonHealth
 
-package CarRental 
+package PersonHealth
 
-kind Person
+category PhysicalObject
 
-role Employee specializes Person
-role ResponsibleEmployee specializes Employee
+kind Hearth specializes PhysicalObject 
 
-phase DeceasedPerson specializes Person
-phase LivingPerson specializes Person
+kind Brain specializes PhysicalObject
 
-phase Child specializes LivingPerson
-phase Teenager specializes LivingPerson
-phase Adult specializes LivingPerson
+phase FunctionalBrain specializes Brain
+phase NonFunctionalBrain specializes Brain
 
-disjoint complete genset AgePhase {
-    general LivingPerson
-    specifics Child, Teenager, Adult
+kind Person specializes PhysicalObject {
+    <>-- hasOneHearth -- [1] Hearth
+    <>-- hasOneBrain -- [1] Brain
 }
 
-disjoint complete genset LifeStatus {
+phase DeceasedPerson 
+phase LivingPerson
+
+disjoint complete genset personByLivingCondition {
     general Person
-    specifics DeceasedPerson, LivingPerson
+    specifics DeceasedPerson, LivingPerson 
 }
 
-roleMixin Customer
+mode Sympton
 
-role PersonalCustomer specializes Customer, Person
+role Patient specializes LivingPerson {
+    @comparative 
+    -- isMoreCriticalThan -- Patient
+    @comparative 
+    -- isLessCriticalThan -- Patient
 
-kind Organization
-
-role CorporateCustomer specializes Organization
-
-kind Car
-
-phase AvailableCar specializes Car
-phase UnderMaintenanceCar specializes Car
-
-role RentalCar specializes AvailableCar
-
-relator CarRental {
-    @mediation
-    -- involvesRental -- [1] RentalCar
+    @material 
+    -- treatedIn -- [1..*] HealhcareProvider
     
-    @mediation
-    -- involvesMediator -- [1] ResponsibleEmployee
-    
-    @mediation
-    -- involvesCustomer --[1] Customer
+    @characterization 
+    -- hasSympton -- [1..*] Sympton
+}
+
+relator Treatment {
+    @mediation --  [1..*] Patient
+    @mediation -- offeredByProvider -- [1] HealhcareProvider
 }

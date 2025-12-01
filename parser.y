@@ -22,7 +22,7 @@ void yyerror(const char *s);
 
 SymbolTable symbolTable;
 SynthesisTable synthesisTable;
-FileGenerator fileGenerator(symbolTable);
+FileGenerator fileGenerator(symbolTable, synthesisTable);
 
 char* copyString(const char* s) {
     if (!s) return nullptr;
@@ -322,6 +322,7 @@ void generateReport() {
     fileGenerator.generateSymbolTableJson("output/symbol_table.json");
     fileGenerator.generateSymbolReport("output/symbol_report.txt");
     fileGenerator.generateErrorReport("output/error_report.txt");
+    fileGenerator.generateSynthesisTableJson("output/synthesis_table.json");
 
     cout << BLUE_TEXT << "===========================================" << RESET_COLOR << endl;
     cout << GREEN_TEXT << "ANÁLISE SINTÁTICA CONCLUÍDA! \\O/" << RESET_COLOR << endl;
