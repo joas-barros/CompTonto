@@ -126,17 +126,25 @@ statements:
     ;
 
 class_declaration:
-    ESTERIOTIPO_CLASSE NOME_DE_CLASSE {
+    class_header class_body_opt
+;
+
+class_header:
+    ESTERIOTIPO_CLASSE NOME_DE_CLASSE
+    {
         synthesisTable.addClass($2, $1, yylineno, token_start_column);
-    } |
-    ESTERIOTIPO_CLASSE NOME_DE_CLASSE LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS {
-        synthesisTable.addClass($2, $1, yylineno, token_start_column);
-    } |
-    ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES image_classes {
+    }
+  | ESTERIOTIPO_CLASSE NOME_DE_CLASSE SPECIALIZES image_classes
+    {
         synthesisTable.addClassWithParents($2, $1, *$4, yylineno, token_start_column);
         delete $4;
     }
-    ;
+;
+
+class_body_opt:
+      /* empty */
+    | LEFT_CURLY_BRACKETS class_body RIGHT_CURLY_BRACKETS
+;
 
 class_body:
     class_body_element |
@@ -210,8 +218,8 @@ enum_value:
     };
 
 external_relation_declaration:
-    AT ESTERIOTIPO_RELACAO RELATION NOME_DE_RELACAO NOME_DE_CLASSE cardinality relation_keyword cardinality NOME_DE_CLASSE {
-        synthesisTable.addExternalRelation($4, $2, $5, $6, $8, $9, yylineno, token_start_column);
+    AT ESTERIOTIPO_RELACAO RELATION NOME_DE_CLASSE cardinality internal_relation_keyword cardinality NOME_DE_CLASSE {
+        synthesisTable.addExternalRelation($6, $2, $4, $5, $7, $8, yylineno, token_start_column);
     };
 
 cardinality:
