@@ -1,0 +1,24 @@
+package PersonPhases
+
+kind Person {
+    years: number
+    name: string
+}
+
+kind Peason
+
+role UniversityStudant specializes Person
+role FormerStudent specializes UniversityStudant
+role ActiveStudent specializes UniversityStudant
+
+phase Child
+phase Teenager
+phase Adult { occupation: string }
+phase Elderly { retired: boolean }
+
+disjoint complete genset PhasesOfPerson {
+    general Person
+    specifics Child, Teenager, Adult, Elderly
+}
+
+@creation relation Person [1] -- has -- [1..*] Child
