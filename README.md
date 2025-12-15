@@ -21,7 +21,11 @@ Este repositório tem como finalidade hospedar a implementação, juntamente com
   * [Principais Construtos Reconhecidos](#principais-construtos-reconhecidos)
   * [Saída do analisador](#saída-do-analisador)
   * [Tratamento de erros](#tratamento-de-erros)
-* [Principais limitações do analisador](#principais-limitações-de-analisador)
+* [Análise semântica](#analise-semântica)
+  * [Padrões de projeto reconhecidos](#padrões-de-projeto-reconhecidos)
+  * [Erros de modelagem reconhecidos](#erros-de-modelagem-reconhecidos)
+  * [Arquivos de saída da análise semântica](#arquivos-de-saída-da-análise-semâtica)
+* [Considerações finais](#considerações-finais)
 * [Referências](#referências)
 
 ## Objetivos
@@ -119,25 +123,36 @@ O arquivo `teste.tonto` é o arquivo da analise léxica, caso queira mudar o exe
 COMPTONTO
 ├── .vscode/                 # Configurações do Visual Studio Code
 ├── Build/                   # Diretório de build (arquivos compilados)
+├── examples/                # Exemplos de ontologias TONTO
 ├── include/                 # Cabeçalhos do projeto (arquivos .h)
 │   ├── colors.h             # Definições de cores para o terminal
 │   ├── file_generator.h     # Interface para geração de relatórios e JSON
+│   ├── semantic_analyzer.h  # Interface do analisador semântico (ODPs)
 │   ├── symbol_table.h       # Declarações da tabela de símbolos (Léxico)
-│   └── synthesis_table.h    # Declarações da tabela de síntese e estruturas semânticas
+│   ├── synthesis_table.h    # Declarações da tabela de síntese (Sintático)
+│   └── tokens.h             # Definição centralizada dos tokens
 ├── output/                  # Saídas geradas pelo compilador
-│   ├── lexical/             # Relatórios da análise léxica (tokens, erros léxicos)
-│   └── syntatical/          # Relatórios da análise sintática (JSON estrutural, erros estruturais)
+│   ├── lexical/             # Relatórios da análise léxica
+│   │   ├── symbol_table.json
+│   │   └── error_report.txt
+│   ├── syntactical/         # Relatórios da análise sintática
+│   │   ├── synthesis_table.json
+│   │   └── syntactical_structure_report.txt
+│   └── semantic/            # Relatórios da análise semântica (ODPs)
+│       ├── semantic_analysis_report.txt
+│       └── semantic_issues_report.txt
 ├── src/                     # Implementações principais (arquivos .cpp)
 │   ├── file_generator.cpp   # Implementação da geração de arquivos de saída
+│   ├── semantic_analyzer.cpp# Implementação do analisador semântico
 │   ├── symbol_table.cpp     # Implementação da tabela de símbolos
-│   └── synthesis_table.cpp  # Implementação da lógica de síntese e validação semântica
+│   └── synthesis_table.cpp  # Implementação da lógica sintática
 ├── .gitignore               # Arquivo para ignorar arquivos/pastas no Git
 ├── CMakeLists.txt           # Configuração do build system CMake
 ├── lexer.l                  # Especificação Flex (Analisador Léxico)
-├── parser.y                 # Especificação Bison (Analisador Sintático e Gramática)
+├── parser.y                 # Especificação Bison (Gramática)
+├── parser.tab.c             # Arquivo gerado pelo Bison
 ├── README.md                # Documentação principal do projeto
-└── teste.tonto              # Arquivo de teste de entrada
-```
+└── teste.tonto              # Arquivo de teste da ontologia
 
 
 ## Análise léxica:
@@ -612,11 +627,46 @@ O analisador semântico identifica violações específicas de regras ontológic
         }
         ```
 
-## Principais limitações de analisador:
+### Arquivos de saída da análise semâtica
 
-- Sua gramática só corresponde a uma porção da linguagem TONTO correspondente aos requisitos do projeto.
-- Ele só ler um arquivo, então não da pra fazer a validação de multiplas visões com ele.
-- Assim que o bison verifica um erro, ele para, não pegando todos os erros sintaticos presentes no arquivo.
+Ao final do processo de análise, são gerados os seguintes arquivos:
+
+  - **Relatório contendo todos os padrões completos encontrados no código: em `output/semantic/semantic_analysis_report.txt`:**
+    ```txt
+        RELATÓRIO DE ANÁLISE SEMÂNTICA
+        ==========================
+
+        Padrão: Subkind Pattern
+        Status: COMPLETE
+        Descrição: A classe 'Bebida' possui especializações do tipo 'subkind' e um genset ('disjoint complete') de nome 'Opcao_De_Bebida' que as agrupa.
+        Participantes:
+          general: Bebida
+          specifics: Agua, Refrigerante, Suco
+        --------------------------
+
+      ```
+
+  - **Relatório contendo os padrão encontrados no código incompleto ou com algum erro de padrão em `output/semantic/semantic_issues_report.txt`**
+  
+    ```txt
+        RELATÓRIO DE PROBLEMAS SEMÂNTICOS
+        ==========================
+
+        Padrão: Role Pattern
+        Status: Declaração Incompleta
+        Descrição do Problema: A classe 'Empresa' possui 2 roles, mas não há um 'genset' declarado (obrigatório para o padrão Role).
+        Participantes:
+          general: Empresa
+          roles: ClienteEmpresarial, Pizzaria
+        --------------------------
+      ```
+
+
+## Considerações finais:
+
+O trabalho cumpriu todos os objetivos descritos no início da documentação, sendo capaz de reconhecer todos os padrões de projeto de ontologia previstos, além de dar uma visão ampla dos erros semânticos presentes no código com base nos padrões definidos. Tudo isso foi alcançado implementando todas as etapas de um front-end de compilador para a linguagem TONTO, integrando as fases de análise léxica, sintática e semântica.
+
+Os principais pontos de melhoria para projetos futuros são: suporte a múltiplos arquivos de entrada para ontologias modulares; melhor tratamento de erros sintáticos (já que o compilador atual para no primeiro erro que encontra); e, por fim, a implementação de um back-end para geração de código em linguagens como OWL ou gUFO.
 
 
 ## Referências
@@ -625,4 +675,7 @@ O analisador semântico identifica violações específicas de regras ontológic
 
 - Lenke, M., Tonto: A Textual Syntax for OntoUML – A textual way for conceptual modeling. Available
 online at: https://matheuslenke.github.io/tonto-docs/
+
+- Ruy, F. B., Guizzardi, G., Falbo, R. A., Reginato, C. C., & Santos, V. A. (2017). From reference
+ontologies to ontology patterns and back. Data & Knowledge Engineering, 109, 41-69.
 
