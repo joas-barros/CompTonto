@@ -400,12 +400,15 @@ void SemanticAnalyzer::checkModePattern(const Package& pkg) {
                 desc += " Também possui " + to_string(dependencyClasses.size()) + " dependência(s) externa(s).";
             }
             result.description = desc;
+            results.push_back(result);
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes).";
+            PatternIssue issue;
+            issue.patternName = "Mode Pattern";
+            issue.status = "Dependência Existencial";
+            issue.issueDescription = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes, pois se trata de uma caracteristica intrínseca que necessita de uma relação de caracterização com outro conceito).";
+            issue.participants = result.participants;
+            issues.push_back(issue);
         }
-
-        results.push_back(result);
     }
 }
 
