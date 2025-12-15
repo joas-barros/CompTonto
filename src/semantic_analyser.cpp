@@ -132,9 +132,13 @@ void SemanticAnalyzer::checkRolePattern(const Package& pkg) {
         result.participants["roles"] = roles;
 
         if (roles.size() == 1) {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui apenas um role ('" + roles[0] + "'). O padrão Role requer pelo menos dois roles";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui apenas um role ('" + roles[0] + "'). O padrão Role requer pelo menos dois roles";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
             continue;
         }
 
@@ -161,18 +165,31 @@ void SemanticAnalyzer::checkRolePattern(const Package& pkg) {
         }
 
         if (foundGenset) {
-            result.status = "COMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(roles.size()) + 
-                                 " roles agrupados corretamente no genset '" + gensetName + "' e retrição '" + gensetType + "'.";
+            if(gensetType.find("disjoint") != string::npos) {
+                PatternIssue issue;
+                issue.patternName = "Role Pattern";
+                issue.status = "Violação de Anti-Rigidez";
+
+                issue.issueDescription = "O genset '" + gensetName + "' que agrupa os roles da classe '" + parentName + "' possui a restrição 'disjoint', o que viola a característica de anti-rigidez dos roles.";
+                issue.participants = result.participants;
+                issues.push_back(issue);
+            } else {
+                result.status = "COMPLETE";
+                result.description = "A classe '" + parentName + "' possui " + to_string(roles.size()) + 
+                                     " roles agrupados corretamente no genset '" + gensetName + "' (sem disjoint).";
+                
+                results.push_back(result);
+            }
         } else {
-            // --- MUDANÇA 2: Sem Genset também é INCOMPLETE ---
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(roles.size()) + 
+            PatternIssue issue;
+            issue.patternName = "Role Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui " + to_string(roles.size()) + 
                                  " roles, mas não há um 'genset' declarado (obrigatório para o padrão Role).";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
         }
-
-        results.push_back(result);
-
     }
 }
 
