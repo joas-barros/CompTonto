@@ -15,10 +15,18 @@ struct PatternResult {
     map<string, vector<string>> participants;
 };
 
+struct PatternIssue {
+    string patternName;
+    string status;
+    string issueDescription;
+    map<string, vector<string>> participants;
+};
+
 class SemanticAnalyzer {
 private:
     const SynthesisTable& synthesisTable;
     vector<PatternResult> results;
+    vector<PatternIssue> issues;
 
     void checkSubkindPattern(const Package& pkg);
     void checkRolePattern(const Package& pkg);

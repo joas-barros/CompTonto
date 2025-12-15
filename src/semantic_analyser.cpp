@@ -20,6 +20,22 @@ void SemanticAnalyzer::checkSubkindPattern(const Package& pkg) {
 
     for (const auto& cls : pkg.classes) {
         if (cls.stereotype == "subkind") {
+
+            // Validação: Subkind sem pai
+            if (cls.parentClasses.empty()) {
+                PatternIssue issue;
+                issue.patternName = "Subkind Pattern";
+                issue.status = "Hierarquia Inválida: Erro de Coersão"; 
+                issue.issueDescription = "A classe '" + cls.name + "' é declarada como 'subkind' mas não especializa nenhuma outra classe. Todo subkind deve obrigatoriamente herdar de um Kind (ou outro tipo rígido).";
+                
+                // Contexto: Mostra quem é o órfão
+                issue.participants["specifics"].push_back(cls.name);
+                // "general" fica vazio ou nem é adicionado, indicando a falta do pai
+                
+                issues.push_back(issue);
+                continue; // Pula para a próxima classe, não tem como mapear sem pai
+            }
+            
             for (const auto& parentName : cls.parentClasses) {
                 parentToSubkindsMap[parentName].push_back(cls.name);
             }
@@ -68,8 +84,15 @@ void SemanticAnalyzer::checkSubkindPattern(const Package& pkg) {
             result.status = "COMPLETE";
             result.description = "A classe '" + parentName + "' possui especializações do tipo 'subkind' e um genset ('" + gensetType + "') de nome '" + gensetName + "' que as agrupa.";
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui especializações do tipo 'subkind', mas não há um genset que as agrupe. Considere adicionar um genset para melhor modelagem.";
+            
+            PatternIssue issue;
+            issue.patternName = "Subkind Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui especializações do tipo 'subkind', mas não há um genset que as agrupe. Considere adicionar um genset para melhor modelagem.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
+
+            continue;
         }
 
         results.push_back(result);
