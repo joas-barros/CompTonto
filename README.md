@@ -1,6 +1,6 @@
 # CompTonto
 
-Este repositório tem como finalidade hospedar a implementação, juntamente com a documentação, de um compilador para a linguagem TONTO sendo o foco do momento no analisador léxico
+Este repositório tem como finalidade hospedar a implementação, juntamente com a documentação, de um compilador para a linguagem TONTO sendo o foco do momento no analisador semantico para validação de padrões de projeto de ontologia.
 
 ## Sumário
 
@@ -21,7 +21,11 @@ Este repositório tem como finalidade hospedar a implementação, juntamente com
   * [Principais Construtos Reconhecidos](#principais-construtos-reconhecidos)
   * [Saída do analisador](#saída-do-analisador)
   * [Tratamento de erros](#tratamento-de-erros)
-* [Principais limitações do analisador](#principais-limitações-de-analisador)
+* [Análise semântica](#analise-semântica)
+  * [Padrões de projeto reconhecidos](#padrões-de-projeto-reconhecidos)
+  * [Erros de modelagem reconhecidos](#erros-de-modelagem-reconhecidos)
+  * [Arquivos de saída da análise semântica](#arquivos-de-saída-da-análise-semâtica)
+* [Considerações finais](#considerações-finais)
 * [Referências](#referências)
 
 ## Objetivos
@@ -31,23 +35,18 @@ TONTO é o acrônimo para **Textual Ontology Language**, uma linguagem projetada
 Na primeira etapa do projeto, realizamos a implementação de um **analisador léxico** para a linguagem TONTO. Esta ferramenta é a primeira etapa no processo de compilação, sendo responsável por processar o código-fonte e reconhecê-lo como uma sequência de unidades léxicas (ou *tokens*). Nessa parte, criamos um subconjunto da
 linguagem Tonto com regras especíﬁcas de escrita de lexemas para representar classes, relações, instâncias, simbolos especiais, além de reconhecer padrões para identificadores de classes, relações, dentre outras coisas.
 
-Na atual etapa do projeto, a segunda etapa, cujo principal objetivo é validar se a sequência de tokens gerada na etapa anterior obedece às regras gramaticais da linguagem TONTO. Além da validação, o analisador é responsável por estruturar hierarquicamente os dados (pacotes, classes, relações e generalizações), garantindo a coerência na formação das frases da linguagem. Portanto, fase de análise sintática, teremos de orientar um ontologista a escrever as estruturas que deﬁnem cada construto da linguagem de acordo com regras bem deﬁnidas de escopo e ordem.
+Na segunda etapa, implementamos o **analisador sintático** da linguagem, cujo principal objetivo é validar se a sequência de tokens gerada na etapa anterior obedece às regras gramaticais da linguagem TONTO. Além da validação, o analisador é responsável por estruturar hierarquicamente os dados (pacotes, classes, relações e generalizações), garantindo a coerência na formação das frases da linguagem. Portanto, na fase de análise sintática, teremos de orientar o ontologista a escrever as estruturas que deﬁnem cada construto da linguagem de acordo com regras bem deﬁnidas de escopo e ordem.
 
-Dessa forma, cabe a nosso **analisador sintático** da linguagem TONTO verificar a corretude de especificação textual de uma ontologia nos seguintes casos:
+Por fim, temos a implementação do **analisador semântico**, cujo objetivo será validar padrões de projeto de ontologias (ontology design patterns - ODPs) que possam estar presentes no código. Os ODPs conferem uma estrutura lógica mais formal à especiﬁcação da ontologia, pois deﬁnem regras de combinação dos conceitos e relações.
 
-* `Declaração de pacotes`
-* `Declaração de classes`
-* `Declaração de tipos de dados`
-* `Declaração de classes enumeradas`
-* `Generalizações (Generalization sets)`
-* `Declarações de relações`
+Ao final da implementação, nosso **analisador semântico**, juntamente com os outros analisadores desenvolvidos anteriormente, deve ser capaz de reconhecer e validar os seguintes padrões presentes em uma ontologia monobloco:
 
-A implementação deste analisador cumpre dois propósitos principais:
-
-1.  **Geração da tabela de sínteses**: Após a estrutura do código ser validada pela gramática, todos os construtos são salvos na Tabela de Síntese (Synthesis Table) e posteriormente exportados em um arquivo JSON. Este arquivo revela toda a árvore hierárquica da ontologia, organizando pacotes, classes e seus respectivos membros.
-2.  **Relatório de erros da ontologia**: O relatório abrange:
-    - **Erros Sintáticos**: Identificação de tokens inesperados ou violações da gramática, com indicação exata de linha e coluna, além de listar quais tokens eram esperados naquele contexto.
-    - **Erros Estruturais/Semânticos**: Validação da topologia da ontologia, identificando inconsistências lógicas como generalizações apontando para classes inexistentes, relações com origens/destinos inválidos ou duplicidade de declarações. Cada erro acompanha uma mensagem descritiva e uma sugestão de correção.
+- `Subkind pattern`
+- `Role pattern`
+- `Phase pattern`
+- `Relator pattern`
+- `Mode pattern`
+- `RoleMixin pattern`
 
 ## Tecnologias utilizadas
 
@@ -58,7 +57,7 @@ A implementação deste analisador cumpre dois propósitos principais:
 - **G++**: Compilador da linguagem C++ para linux
 - **GBD**: Ferramenta de depuração
 - **Visual Studio Code**: Editor de código 
-- **Git** - Versionamento do código
+- **Git**: Versionamento do código
 
 ## Tutorial de execução
 
@@ -124,25 +123,36 @@ O arquivo `teste.tonto` é o arquivo da analise léxica, caso queira mudar o exe
 COMPTONTO
 ├── .vscode/                 # Configurações do Visual Studio Code
 ├── Build/                   # Diretório de build (arquivos compilados)
+├── examples/                # Exemplos de ontologias TONTO
 ├── include/                 # Cabeçalhos do projeto (arquivos .h)
 │   ├── colors.h             # Definições de cores para o terminal
 │   ├── file_generator.h     # Interface para geração de relatórios e JSON
+│   ├── semantic_analyzer.h  # Interface do analisador semântico (ODPs)
 │   ├── symbol_table.h       # Declarações da tabela de símbolos (Léxico)
-│   └── synthesis_table.h    # Declarações da tabela de síntese e estruturas semânticas
+│   ├── synthesis_table.h    # Declarações da tabela de síntese (Sintático)
+│   └── tokens.h             # Definição centralizada dos tokens
 ├── output/                  # Saídas geradas pelo compilador
-│   ├── lexical/             # Relatórios da análise léxica (tokens, erros léxicos)
-│   └── syntatical/          # Relatórios da análise sintática (JSON estrutural, erros estruturais)
+│   ├── lexical/             # Relatórios da análise léxica
+│   │   ├── symbol_table.json
+│   │   └── error_report.txt
+│   ├── syntactical/         # Relatórios da análise sintática
+│   │   ├── synthesis_table.json
+│   │   └── syntactical_structure_report.txt
+│   └── semantic/            # Relatórios da análise semântica (ODPs)
+│       ├── semantic_analysis_report.txt
+│       └── semantic_issues_report.txt
 ├── src/                     # Implementações principais (arquivos .cpp)
 │   ├── file_generator.cpp   # Implementação da geração de arquivos de saída
+│   ├── semantic_analyzer.cpp# Implementação do analisador semântico
 │   ├── symbol_table.cpp     # Implementação da tabela de símbolos
-│   └── synthesis_table.cpp  # Implementação da lógica de síntese e validação semântica
+│   └── synthesis_table.cpp  # Implementação da lógica sintática
 ├── .gitignore               # Arquivo para ignorar arquivos/pastas no Git
 ├── CMakeLists.txt           # Configuração do build system CMake
 ├── lexer.l                  # Especificação Flex (Analisador Léxico)
-├── parser.y                 # Especificação Bison (Analisador Sintático e Gramática)
+├── parser.y                 # Especificação Bison (Gramática)
+├── parser.tab.c             # Arquivo gerado pelo Bison
 ├── README.md                # Documentação principal do projeto
-└── teste.tonto              # Arquivo de teste de entrada
-```
+└── teste.tonto              # Arquivo de teste da ontologia
 
 
 ## Análise léxica:
@@ -257,11 +267,9 @@ Erro Léxico: Símbolo não identificado '?' na linha 93, coluna 21
 ==========================
 ```
 
-## Análise sintática
+## Análise Sintática
 
 Após a conclusão da análise léxica, que transforma o código-fonte em uma sequência de tokens, o próximo passo natural é o desenvolvimento do analisador sintático. Esta nova fase será responsável por validar a estrutura gramatical da linguagem TONTO.
-
-Com certeza. [cite_start]Utilizando os exemplos e definições presentes no documento de especificação do projeto[cite: 14], aqui está a seção formatada no estilo que você solicitou, focando na estrutura prática e exemplos de uso ao invés de regras gramaticais abstratas.
 
 -----
 
@@ -320,7 +328,7 @@ O analisador processa e estrutura os seguintes elementos da linguagem TONTO:
         }
         ```
 
-  * **Relações**: Podem ser declaradas de duas formas distintas[cite: 56]:
+  * **Relações**: Podem ser declaradas de duas formas distintas:
 
       * **Interna**: Declarada dentro do escopo de uma classe, assumindo-a como origem[cite: 56].
         ```txt
@@ -404,11 +412,261 @@ Sugestão: Corrija o nome da classe specific.
 --------------------------
 ==========================
 ```
-## Principais limitações de analisador:
 
-- Sua gramática só corresponde a uma porção da linguagem TONTO correspondente aos requisitos do projeto.
-- Ele só ler um arquivo, então não da pra fazer a validação de multiplas visões com ele.
-- Assim que o bison verifica um erro, ele para, não pegando todos os erros sintaticos presentes no arquivo.
+## Analise Semântica
+
+Após a etapa de analise sintática, com a construção da nossa `synthesis_table` com todos nossos construtos reconhecidos, e estruturados conforme o relacionamento de cada um dentro da ontologia, é possível realizar o reconhecimento de padrões de projeto presentes na mesma por meio do nosso `analisador semântico`, cujo processo de análise e reconhecimento pode ser dividido da seguinte forma:
+
+1. Recebe a `synthesis_table` com todos os construtos estruturados
+2. Percorre toda a ontologia reconhecendo um padrão por vez
+3. Verifica se algo está fora do padrão e armazena o possivel erro para ser exibido ao ontologista depois
+4. Após todo processo de analise semântica, são gerados dois relatórios, um com os padrões de projeto reconhecidos corretamente dentro da ontologia e outro com os erros encontrados de acordo com os padrões estabelecidos.
+
+Todo processo de análise semântica é feita dentro da classe `SemanticAnalyzer` declarada em `include\semantic_analiser.h` e implementada em `src\semantic_analiser.cpp`
+
+### Padrões de projeto reconhecidos:
+
+1. **Subkind pattern**: Padrão de projeto que define uma estrutura de hierarquia entre uma classe de esteriotipo `subkind` e outra classe pai, sendo que se essa classe tiver mais de um filho `subkind`, deve ser declarada alguma generalização de relacionamento entre elas dentro da ontologia.
+    - **Estrutura TONTO do padrão**:
+    ```txt
+        package Subkind_Pattern
+
+        kind ClassName
+        subkind SubclassName1 specializes ClassName
+        subkind SubclassName2 specializes ClassName
+
+        disjoint complete genset Kind_Subkind_Genset_Name { 
+            general ClassName
+            specifics SubclassName1, SubclassName2
+        }
+        // "complete" is optional, but "disjoint" applies to subkinds
+      ```
+
+2.  **Role pattern**: Padrão que define uma estrutura de hierarquia onde uma classe pai é especializada por duas ou mais classes com estereótipo `role`. Devido à natureza relacional e dinâmica dos papéis, é obrigatório haver um `genset` agrupando essas classes, porém, este genset **não** deve possuir a restrição `disjoint` (podendo ser `overlapping` ou indefinido quanto à disjunção).
+
+      - **Estrutura TONTO do padrão**:
+
+    <!-- end list -->
+
+    ```txt
+        package Role_Pattern
+
+        kind ClassName
+        role Role_Name1 specializes ClassName
+        role Role_Name2 specializes ClassName
+
+        complete genset Class_Role_Genset_Name { 
+            general ClassName
+            specifics Role_Name1, Role_Name2
+        }
+        // "complete" is optional, but "disjoint" doesn't apply to roles here
+    ```
+
+3.  **Phase pattern**: Padrão que representa mudanças de estados intrínsecos de uma entidade. Define uma hierarquia onde uma classe pai é especializada por duas ou mais classes com estereótipo `phase`. Para este padrão, a declaração de um `genset` é obrigatória e ele **deve** conter a restrição `disjoint` (fases são mutuamente exclusivas).
+
+      - **Estrutura TONTO do padrão**:
+
+    <!-- end list -->
+
+    ```txt
+        package Phase_Pattern
+
+        kind ClassName
+        phase Phase_Name1 specializes ClassName
+        phase Phase_Name2 specializes ClassName
+
+        disjoint complete genset Class_Phase_Genset_Name {
+            general ClassName
+            specifics Phase_Name1, Phase_Name2
+        }
+        // "disjoint" is mandatory for phases
+    ```
+
+4.  **Relator pattern**: Padrão complexo que envolve uma classe com estereótipo `relator` atuando como mediadora entre outras entidades. O relator deve possuir relações internas de `@mediation` apontando para duas ou mais classes distintas. Adicionalmente, deve existir uma relação externa de `@material` conectando as classes que estão sendo mediadas.
+
+      - **Estrutura TONTO do padrão**:
+
+    <!-- end list -->
+
+    ```txt
+        package Relator_Pattern
+
+        kind ClassName1
+        kind ClassName2
+
+        relator Relator_Name {
+            @mediation [1..*] -- [1..*] ClassName1
+            @mediation [1..*] -- [1..*] ClassName2
+        }
+
+        @material relation ClassName1 [1..*] -- relationName -- [1..*] ClassName2 
+    ```
+
+5.  **Mode pattern**: Padrão que define uma propriedade intrínseca, mas dependente, de uma entidade. Consiste em uma classe com estereótipo `mode` que deve possuir obrigatoriamente uma relação interna de `@characterization` apontando para a classe que ela caracteriza. Pode opcionalmente conter relações de `@externalDependence`.
+
+      - **Estrutura TONTO do padrão**:
+
+    <!-- end list -->
+
+    ```txt
+        package Mode_Pattern
+
+        kind ClassName1
+        kind ClassName2
+
+        mode Mode_Name1 {
+            @characterization [1..*] -- [1] ClassName1
+            @externalDependence [1..*] -- [1] ClassName2
+        }
+    ```
+
+6.  **RoleMixin pattern**: Padrão que define uma abstração de papéis comuns a diferentes tipos. A estrutura exige que uma classe pai tenha o estereótipo `roleMixin` e seja especializada por duas ou mais classes com estereótipo `role`. É obrigatória a presença de um `genset` com a restrição `disjoint` agrupando os filhos.
+
+      - **Estrutura TONTO do padrão**:
+
+    <!-- end list -->
+
+    ```txt
+        package RoleMixin_Pattern
+
+        kind ClassName1
+        kind ClassName2
+
+        role Role_Name1 specializes ClassName1
+        role Role_Name2 specializes ClassName2
+
+        roleMixin RoleMixin_Name
+
+        disjoint complete genset RoleMixin_Genset_Name {
+            general RoleMixin_Name
+            specifics Role_Name1, Role_Name2
+        }
+    ```
+
+### Erros de modelagem reconhecidos:
+
+O analisador semântico identifica violações específicas de regras ontológicas e estruturais para cada padrão. Abaixo estão os erros reportados no arquivo `output\semantic\semantic_issues_report.txt`:
+
+1.  **Hierarquia Inválida: Erro de Coerção**
+
+      * **Contexto**: Ocorre no *Subkind Pattern*.
+      * **Descrição**: Uma classe é declarada com estereótipo `subkind` mas não especializa nenhuma outra classe. Semanticamente, um subkind é uma especialização rígida e *deve* herdar o princípio de identidade de um `kind` (ou outro tipo rígido).
+      * **Exemplo que gera erro**:
+        ```txt
+        subkind Cachorro // Erro: Não especifica "specializes Animal"
+        ```
+
+2.  **Declaração Incompleta**
+
+      * **Contexto**: Todos os padrões (Subkind, Role, Phase, Relator, RoleMixin).
+      * **Descrição**: Indica que a estrutura mínima do padrão não foi atendida. As causas mais comuns são:
+          * Falta de um `genset` agrupando múltiplas especializações (obrigatório para *Role*, *Phase*, *RoleMixin* e *Subkind* com múltiplos filhos).
+          * Quantidade insuficiente de filhos (ex: um *RoleMixin* com apenas 1 filho, ou um *Relator* mediando apenas 1 classe).
+      * **Exemplo que gera erro**:
+        ```txt
+        kind Pessoa
+        role Estudante specializes Pessoa
+        role Professor specializes Pessoa
+        // Erro: Faltou declarar o genset agrupando Estudante e Professor
+        ```
+
+3.  **Violação de Anti-Rigidez**
+
+      * **Contexto**: Ocorre no *Role Pattern*.
+      * **Descrição**: Um `genset` que agrupa classes `role` foi declarado com a restrição `disjoint`. Como *Roles* são tipos anti-rígidos e relacionais (um mesmo indivíduo pode desempenhar múltiplos papéis simultaneamente, ex: ser Professor e Aluno), a disjunção não deve ser forçada.
+      * **Exemplo que gera erro**:
+        ```txt
+        disjoint complete genset Papeis { // Erro: "disjoint" não se aplica aqui
+            general Pessoa
+            specifics Estudante, Professor
+        }
+        ```
+
+4.  **Violação Temporal**
+
+      * **Contexto**: Ocorre no *Phase Pattern*.
+      * **Descrição**: Um `genset` que agrupa classes `phase` foi declarado **sem** a restrição `disjoint`. Fases representam estados intrínsecos e mutuamente exclusivos no tempo (ex: Vivo/Morto, Criança/Adulto), portanto a disjunção é obrigatória.
+      * **Exemplo que gera erro**:
+        ```txt
+        complete genset FasesDaVida { // Erro: Faltou "disjoint"
+            general Pessoa
+            specifics Crianca, Adulto
+        }
+        ```
+
+5.  **Dependência Existencial**
+
+      * **Contexto**: Ocorre no *Mode Pattern*.
+      * **Descrição**: Uma classe `mode` foi declarada sem uma relação interna de `@characterization`. Modes são propriedades intrínsecas que dependem existencialmente de um portador (o "bearer"), logo essa relação é obrigatória.
+      * **Exemplo que gera erro**:
+        ```txt
+        mode Habilidade {
+            // Erro: Faltou declarar @characterization ...
+        }
+        ```
+
+6.  **Tipo Inválido de Especialização: Erro de Coerção**
+
+      * **Contexto**: Ocorre no *RoleMixin Pattern*.
+      * **Descrição**: Uma classe `roleMixin` está sendo especializada por uma classe que não possui o estereótipo `role`. Um *RoleMixin* é uma abstração de papéis, portanto, seus filhos concretos devem ser, por definição, papéis.
+      * **Exemplo que gera erro**:
+        ```txt
+        roleMixin Cliente
+        kind Pessoa specializes Cliente // Erro: "kind" não pode herdar de RoleMixin
+        ```
+
+7.  **Abstração de Papéis**
+
+      * **Contexto**: Ocorre no *RoleMixin Pattern*.
+      * **Descrição**: O `genset` que agrupa os filhos de um *RoleMixin* não possui a restrição `disjoint`. Para garantir a correta abstração e separação dos tipos que jogam aquele papel (geralmente tipos disjuntos como *Pessoa* e *Organização*), a disjunção é exigida neste padrão.
+      * **Exemplo que gera erro**:
+        ```txt
+        complete genset Clientes { // Erro: Faltou "disjoint"
+            general Cliente
+            specifics ClientePessoa, ClienteEmpresa
+        }
+        ```
+
+### Arquivos de saída da análise semâtica
+
+Ao final do processo de análise, são gerados os seguintes arquivos:
+
+  - **Relatório contendo todos os padrões completos encontrados no código: em `output/semantic/semantic_analysis_report.txt`:**
+    ```txt
+        RELATÓRIO DE ANÁLISE SEMÂNTICA
+        ==========================
+
+        Padrão: Subkind Pattern
+        Status: COMPLETE
+        Descrição: A classe 'Bebida' possui especializações do tipo 'subkind' e um genset ('disjoint complete') de nome 'Opcao_De_Bebida' que as agrupa.
+        Participantes:
+          general: Bebida
+          specifics: Agua, Refrigerante, Suco
+        --------------------------
+
+      ```
+
+  - **Relatório contendo os padrão encontrados no código incompleto ou com algum erro de padrão em `output/semantic/semantic_issues_report.txt`**
+  
+    ```txt
+        RELATÓRIO DE PROBLEMAS SEMÂNTICOS
+        ==========================
+
+        Padrão: Role Pattern
+        Status: Declaração Incompleta
+        Descrição do Problema: A classe 'Empresa' possui 2 roles, mas não há um 'genset' declarado (obrigatório para o padrão Role).
+        Participantes:
+          general: Empresa
+          roles: ClienteEmpresarial, Pizzaria
+        --------------------------
+      ```
+
+
+## Considerações finais:
+
+O trabalho cumpriu todos os objetivos descritos no início da documentação, sendo capaz de reconhecer todos os padrões de projeto de ontologia previstos, além de dar uma visão ampla dos erros semânticos presentes no código com base nos padrões definidos. Tudo isso foi alcançado implementando todas as etapas de um front-end de compilador para a linguagem TONTO, integrando as fases de análise léxica, sintática e semântica.
+
+Os principais pontos de melhoria para projetos futuros são: suporte a múltiplos arquivos de entrada para ontologias modulares; melhor tratamento de erros sintáticos (já que o compilador atual para no primeiro erro que encontra); e, por fim, a implementação de um back-end para geração de código em linguagens como OWL ou gUFO.
 
 
 ## Referências
@@ -417,4 +675,7 @@ Sugestão: Corrija o nome da classe specific.
 
 - Lenke, M., Tonto: A Textual Syntax for OntoUML – A textual way for conceptual modeling. Available
 online at: https://matheuslenke.github.io/tonto-docs/
+
+- Ruy, F. B., Guizzardi, G., Falbo, R. A., Reginato, C. C., & Santos, V. A. (2017). From reference
+ontologies to ontology patterns and back. Data & Knowledge Engineering, 109, 41-69.
 

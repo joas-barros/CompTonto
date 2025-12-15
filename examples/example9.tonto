@@ -1,0 +1,17 @@
+package CoreDataTypes
+
+datatype number
+datatype int specializes number
+
+datatype PhoneNumberDataType {
+    countryCode: int [1]
+    bodyNumber: int [1]
+}
+
+
+enum EyeColor {
+    Blue1,
+    Green1,
+    Brown1,
+    Black1
+}

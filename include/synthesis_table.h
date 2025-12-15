@@ -11,6 +11,7 @@ struct Attribute {
     string name;
     string type;
     string metaattribute;
+    int quantity;
 };
 
 struct DataType {
@@ -102,7 +103,7 @@ public:
     bool checkClassExists(const string& name);
     void addInternalRelationToCurrentClass(const string& target, const string& cardTarget, const string& cardSrc,const string& name, const string& stereo);
 
-    void addAttribute(const string& name, const string& type, const string& meta);
+    void addAttribute(const string& name, const string& type, const string& meta, const int quantity);
 
     // Métodos para DataTypes
     void addDataType(const string& name, int line, int col);

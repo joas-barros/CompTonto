@@ -47,7 +47,7 @@ string getTokenName(int token) {
     }
 }
 
-FileGenerator::FileGenerator(const SymbolTable& symTable, const SynthesisTable& synthTable) : symbolTable(symTable), synthesisTable(synthTable) {}
+FileGenerator::FileGenerator(const SymbolTable& symTable, const SynthesisTable& synthTable, const SemanticAnalyzer& semAnalyzer) : symbolTable(symTable), synthesisTable(synthTable), semanticAnalyzer(semAnalyzer) {}
 
 FileGenerator::~FileGenerator() {}
 
@@ -216,7 +216,7 @@ void FileGenerator::generateSynthesisTableJson(const string& filename) {
             for (const auto& attr : cls.attributes) {
                 if (!firstAttr) fout << ",\n";
                 firstAttr = false;
-                fout << "              { \"name\": \"" << attr.name << "\", \"type\": \"" << attr.type << "\", \"metaattribute\": \"" << attr.metaattribute << "\" }";
+                fout << "              { \"name\": \"" << attr.name << "\", \"type\": \"" << attr.type << "\", \"metaattribute\": \"" << attr.metaattribute <<  "\", \"quantity\": " << attr.quantity << " }";
             }
             fout << "\n            ],\n";
 
@@ -396,4 +396,88 @@ void FileGenerator::generateSynthesisStructureReport(const string& filename) {
     }
 
     fout.close();
+}
+
+void FileGenerator::generateSemanticAnalysisReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    const auto& patterns = semanticAnalyzer.getPatterns();
+    if (patterns.empty()) {
+        fout << "Nenhum padrão semântico identificado! :)" << endl;
+    } else {
+        fout << "RELATÓRIO DE ANÁLISE SEMÂNTICA" << endl;
+        fout << "==========================" << endl;
+
+        fout << "\n";
+
+        for (const auto& pattern : patterns) {
+            fout << "Padrão: " << pattern.patternName << endl;
+            fout << "Status: " << pattern.status << endl;
+            fout << "Descrição: " << pattern.description << endl;
+            fout << "Participantes:" << endl;
+            for (const auto& participant : pattern.participants) {
+                fout << "  " << participant.first << ": ";
+                for (size_t i = 0; i < participant.second.size(); ++i) {
+                    if (i > 0) fout << ", ";
+                    fout << participant.second[i];
+                }
+                fout << endl;
+            }
+            fout << "--------------------------" << endl;
+            fout << "\n\n";
+        }
+
+        fout << "==========================" << endl;
+    }
+
+    fout.close();
+
+    cout << MAGENTA_TEXT << "Relatório de análise semântica gerado em " << filename << RESET_COLOR << endl;
+}
+
+void FileGenerator::generateSemanticIssuesReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    const auto& issues = semanticAnalyzer.getIssues();
+    if (issues.empty()) {
+        fout << "Nenhum problema semântico identificado! :)" << endl;
+    } else {
+
+        cerr << RED_TEXT << issues.size() << " problemas semânticos identificados durante a análise." << RESET_COLOR << endl;
+        cerr << RED_TEXT << "Relatório de problemas semânticos gerado em " << filename << RESET_COLOR << endl;
+        fout << "RELATÓRIO DE PROBLEMAS SEMÂNTICOS" << endl;
+        fout << "==========================" << endl;
+
+        fout << "\n";
+
+        for (const auto& issue : issues) {
+            fout << "Padrão: " << issue.patternName << endl;
+            fout << "Status: " << issue.status << endl;
+            fout << "Descrição do Problema: " << issue.issueDescription << endl;
+            fout << "Participantes:" << endl;
+            for (const auto& participant : issue.participants) {
+                fout << "  " << participant.first << ": ";
+                for (size_t i = 0; i < participant.second.size(); ++i) {
+                    if (i > 0) fout << ", ";
+                    fout << participant.second[i];
+                }
+                fout << endl;
+            }
+            fout << "--------------------------" << endl;
+            fout << "\n\n";
+        }
+
+        fout << "==========================" << endl;
+    }
+
+    fout.close();
+
 }

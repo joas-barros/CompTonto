@@ -5,6 +5,7 @@
 #include "symbol_table.h"
 #include "synthesis_table.h"
 #include "file_generator.h"
+#include "semantic_analyser.h"
 #include "colors.h"
 #include <vector>
 
@@ -22,7 +23,8 @@ void yyerror(const char *s);
 
 SymbolTable symbolTable;
 SynthesisTable synthesisTable;
-FileGenerator fileGenerator(symbolTable, synthesisTable);
+SemanticAnalyzer semanticAnalyzer(synthesisTable);
+FileGenerator fileGenerator(symbolTable, synthesisTable, semanticAnalyzer);
 
 char* copyString(const char* s) {
     if (!s) return nullptr;
@@ -50,6 +52,7 @@ char* copyString(const char* s) {
 %type <sval> domain_classes
 %type <sval> generalization_restriction_keyword
 %type <sval> generalization_restrictions_opt
+%type <sval> attribute_quantity
 
 
 %token PALAVRA_RESERVADA
@@ -167,22 +170,37 @@ attribute_list:
     ;
 
 attribute_declaration:
-    NOME_DE_RELACAO COLON DADO_NATIVO {
-        synthesisTable.addAttribute($1, $3, "");
+    NOME_DE_RELACAO COLON DADO_NATIVO attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON NOVO_TIPO {
-        synthesisTable.addAttribute($1, $3, "");
+    NOME_DE_RELACAO COLON NOVO_TIPO attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        synthesisTable.addAttribute($1, $3, $5);
+    NOME_DE_RELACAO COLON NOME_DE_CLASSE attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        synthesisTable.addAttribute($1, $3, $5);
+    NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
+    } |
+
+    NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
+    } |
+
+    NOME_DE_RELACAO COLON NOME_DE_CLASSE LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
     }
     ;
+
+attribute_quantity:
+    LEFT_SQUARE_BRACKETS NUMERO RIGHT_SQUARE_BRACKETS {
+        $$ = $2;
+    } | /* empty */ {
+       $$ = copyString("1");
+    };
 
 internal_relation_declaration:
     AT ESTERIOTIPO_RELACAO cardinality internal_relation_keyword cardinality NOME_DE_CLASSE {
@@ -355,6 +373,13 @@ void generateLexicalReport() {
     fileGenerator.generateErrorReport("output/lexical/lexical_error_report.txt");
 }
 
+void generateSemanticReport() {
+    cout << MAGENTA_TEXT <<"Gerando relatórios da análise semântica..." << RESET_COLOR << endl;
+    semanticAnalyzer.analyze();
+    fileGenerator.generateSemanticAnalysisReport("output/semantic/semantic_analysis_report.txt");
+    fileGenerator.generateSemanticIssuesReport("output/semantic/semantic_issues_report.txt");
+}
+
 int yyreport_syntax_error(const yypcontext_t *ctx) {
     cerr << RED_TEXT << "Erro de Sintaxe na linha " << yylineno 
          << " coluna " << token_start_column << ":" << RESET_COLOR << endl;
@@ -426,6 +451,9 @@ int main(int argc, char** argv) {
         synthesisTable.validateStructure(); 
 
         generateSyntacticalReport(); 
+
+        cout << MAGENTA_TEXT << "\nIniciando Análise Semântica..." << RESET_COLOR << endl;
+        generateSemanticReport();
     } else {
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
     }
