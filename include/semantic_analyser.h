@@ -25,6 +25,7 @@ private:
     void checkPhasePattern(const Package& pkg);
     void checkRelatorPattern(const Package& pkg);
     void checkModePattern(const Package& pkg);
+    void checkRoleMixinPattern(const Package& pkg);
     
 public:
     SemanticAnalyzer(const SynthesisTable& table);

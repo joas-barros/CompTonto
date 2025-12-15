@@ -11,6 +11,7 @@ void SemanticAnalyzer::analyze() {
         checkPhasePattern(pkg);
         checkRelatorPattern(pkg);
         checkModePattern(pkg);
+        checkRoleMixinPattern(pkg);
     }
 }
 
@@ -338,6 +339,104 @@ void SemanticAnalyzer::checkModePattern(const Package& pkg) {
         } else {
             result.status = "INCOMPLETE";
             result.description = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes).";
+        }
+
+        results.push_back(result);
+    }
+}
+
+void SemanticAnalyzer::checkRoleMixinPattern(const Package& pkg) {
+    for (const auto& cls : pkg.classes) {
+        // Filtra apenas classes RoleMixin
+        if (cls.stereotype != "roleMixin") continue;
+
+        string parentName = cls.name;
+        
+        // 2. Encontrar os filhos dessa RoleMixin
+        vector<const Class*> childrenClasses;
+        for (const auto& potentialChild : pkg.classes) {
+            for (const auto& p : potentialChild.parentClasses) {
+                if (p == parentName) {
+                    childrenClasses.push_back(&potentialChild);
+                    break;
+                }
+            }
+        }
+
+        PatternResult result;
+        result.patternName = "Role Mixin Pattern";
+        result.participants["general"].push_back(parentName);
+
+        vector<string> specializedRoles;
+        bool allChildrenAreRoles = true;
+
+        for (const auto* child : childrenClasses) {
+            specializedRoles.push_back(child->name);
+            if (child->stereotype != "role") {
+                allChildrenAreRoles = false;
+            }
+        }
+        result.participants["specifics"] = specializedRoles;
+
+        // Validação 1: Quantidade de filhos
+        if (specializedRoles.size() < 2) {
+            result.status = "INCOMPLETE";
+            result.description = "O roleMixin '" + parentName + "' possui menos de 2 especializações (encontradas: " + to_string(childrenClasses.size()) + "). Mixins devem abstrair propriedades de múltiplos tipos.";
+            results.push_back(result);
+            continue;
+        }
+
+        // Validação 2: Tipos dos filhos
+        if (!allChildrenAreRoles) {
+            result.status = "INCOMPLETE";
+            result.description = "O roleMixin '" + parentName + "' possui filhos que não são 'role'. Pelo padrão definido, todos devem ser roles.";
+            results.push_back(result);
+            continue;
+        }
+
+        // Validação 3: Genset com Disjoint
+        bool foundGenset = false;
+        bool isDisjoint = false;
+        string gensetName = "";
+
+        for (const auto& gen : pkg.generalizations) {
+            if (gen.parentClass == parentName) {
+                // Verifica se cobre os filhos encontrados
+                bool coversChildren = false;
+                for (const auto& childName : gen.childClasses) {
+                    for (const auto& cName : specializedRoles) {
+                        if (childName == cName) {
+                            coversChildren = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (coversChildren) {
+                    foundGenset = true;
+                    gensetName = gen.name;
+                    
+                    // Verifica a restrição "disjoint" na string restrictions
+                    // (Ex: "disjoint complete" ou só "disjoint")
+                    if (gen.restrictions.find("disjoint") != string::npos) {
+                        isDisjoint = true;
+                    }
+                    break; 
+                }
+            }
+        }
+
+        if (foundGenset) {
+            if (isDisjoint) {
+                result.status = "COMPLETE";
+                result.description = "O roleMixin '" + parentName + "' é especializado por roles agrupados no genset disjoint '" + gensetName + "'.";
+            } else {
+                result.status = "INCOMPLETE";
+                result.description = "O genset '" + gensetName + "' foi encontrado, mas falta a restrição 'disjoint' obrigatória para RoleMixin.";
+            }
+        } else {
+            result.status = "INCOMPLETE";
+            result.description = "O roleMixin '" + parentName + "' tem filhos, mas não há um 'genset' declarado.";
         }
 
         results.push_back(result);
