@@ -47,7 +47,7 @@ string getTokenName(int token) {
     }
 }
 
-FileGenerator::FileGenerator(const SymbolTable& symTable, const SynthesisTable& synthTable) : symbolTable(symTable), synthesisTable(synthTable) {}
+FileGenerator::FileGenerator(const SymbolTable& symTable, const SynthesisTable& synthTable, const SemanticAnalyzer& semAnalyzer) : symbolTable(symTable), synthesisTable(synthTable), semanticAnalyzer(semAnalyzer) {}
 
 FileGenerator::~FileGenerator() {}
 
@@ -396,4 +396,45 @@ void FileGenerator::generateSynthesisStructureReport(const string& filename) {
     }
 
     fout.close();
+}
+
+void FileGenerator::generateSemanticAnalysisReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    const auto& patterns = semanticAnalyzer.getPatterns();
+    if (patterns.empty()) {
+        fout << "Nenhum padrão semântico identificado! :)" << endl;
+    } else {
+        fout << "RELATÓRIO DE ANÁLISE SEMÂNTICA" << endl;
+        fout << "==========================" << endl;
+
+        fout << "\n";
+
+        for (const auto& pattern : patterns) {
+            fout << "Padrão: " << pattern.patternName << endl;
+            fout << "Status: " << pattern.status << endl;
+            fout << "Descrição: " << pattern.description << endl;
+            fout << "Participantes:" << endl;
+            for (const auto& participant : pattern.participants) {
+                fout << "  " << participant.first << ": ";
+                for (size_t i = 0; i < participant.second.size(); ++i) {
+                    if (i > 0) fout << ", ";
+                    fout << participant.second[i];
+                }
+                fout << endl;
+            }
+            fout << "--------------------------" << endl;
+            fout << "\n\n";
+        }
+
+        fout << "==========================" << endl;
+    }
+
+    fout.close();
+
+    cout << MAGENTA_TEXT << "Relatório de análise semântica gerado em " << filename << RESET_COLOR << endl;
 }

@@ -5,6 +5,7 @@
 #include "symbol_table.h"
 #include "synthesis_table.h"
 #include "file_generator.h"
+#include "semantic_analyser.h"
 #include "colors.h"
 #include <vector>
 
@@ -22,7 +23,8 @@ void yyerror(const char *s);
 
 SymbolTable symbolTable;
 SynthesisTable synthesisTable;
-FileGenerator fileGenerator(symbolTable, synthesisTable);
+SemanticAnalyzer semanticAnalyzer(synthesisTable);
+FileGenerator fileGenerator(symbolTable, synthesisTable, semanticAnalyzer);
 
 char* copyString(const char* s) {
     if (!s) return nullptr;
@@ -187,7 +189,7 @@ attribute_declaration:
     NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
         synthesisTable.addAttribute($1, $3, $5, atoi($7));
     } |
-    
+
     NOME_DE_RELACAO COLON NOME_DE_CLASSE LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
         synthesisTable.addAttribute($1, $3, $5, atoi($7));
     }
@@ -442,6 +444,10 @@ int main(int argc, char** argv) {
         synthesisTable.validateStructure(); 
 
         generateSyntacticalReport(); 
+
+        cout << MAGENTA_TEXT << "\nIniciando Análise Semântica..." << RESET_COLOR << endl;
+        semanticAnalyzer.analyze();
+        fileGenerator.generateSemanticAnalysisReport("output/semantic/semantic_analysis_report.txt");
     } else {
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
     }
