@@ -447,17 +447,23 @@ void SemanticAnalyzer::checkRoleMixinPattern(const Package& pkg) {
 
         // Validação 1: Quantidade de filhos
         if (specializedRoles.size() < 2) {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' possui menos de 2 especializações (encontradas: " + to_string(childrenClasses.size()) + "). Mixins devem abstrair propriedades de múltiplos tipos.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O roleMixin '" + parentName + "' possui menos de 2 especializações (encontradas: " + to_string(childrenClasses.size()) + "). Mixins devem abstrair propriedades de múltiplos tipos.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
             continue;
         }
 
         // Validação 2: Tipos dos filhos
         if (!allChildrenAreRoles) {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' possui filhos que não são 'role'. Pelo padrão definido, todos devem ser roles.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Tipo Inválido de Especialização: Erro de Coersão";
+            issue.issueDescription = "O roleMixin '" + parentName + "' possui filhos que não são 'role'. Pelo padrão definido, é esperado que todos sejam roles.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
             continue;
         }
 
@@ -497,15 +503,22 @@ void SemanticAnalyzer::checkRoleMixinPattern(const Package& pkg) {
             if (isDisjoint) {
                 result.status = "COMPLETE";
                 result.description = "O roleMixin '" + parentName + "' é especializado por roles agrupados no genset disjoint '" + gensetName + "'.";
+                results.push_back(result);
             } else {
-                result.status = "INCOMPLETE";
-                result.description = "O genset '" + gensetName + "' foi encontrado, mas falta a restrição 'disjoint' obrigatória para RoleMixin.";
+                PatternIssue issue;
+                issue.patternName = "Role Mixin Pattern";
+                issue.status = "Abstração de Papéis";
+                issue.issueDescription = "O genset '" + gensetName + "' foi encontrado, mas falta a restrição 'disjoint' obrigatória para RoleMixin, garantindo que os papéis sejam mutuamente exclusivos.";
+                issue.participants = result.participants;
+                issues.push_back(issue);
             }
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' tem filhos, mas não há um 'genset' declarado.";
-        }
-
-        results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O roleMixin '" + parentName + "' tem filhos, mas não há um 'genset' declarado.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
+        }    
     }
 }
