@@ -298,9 +298,11 @@ void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
         result.participants["mediated"] = mediatedClasses;
 
         if (mediatedClasses.size() < 2) {
-            result.status = "INCOMPLETE";
-            result.description = "O relator '" + cls.name + "' possui menos de 2 mediações (encontradas: " + to_string(mediatedClasses.size()) + ").";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Relator Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O relator '" + cls.name + "' possui menos de 2 mediações (encontradas: " + to_string(mediatedClasses.size()) + ").";
+            issues.push_back(issue);
             continue;
         }
 
@@ -343,12 +345,16 @@ void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
             result.status = "COMPLETE";
             result.description = "O relator '" + cls.name + "' media as classes " + 
                                  to_string(mediatedClasses.size()) + " classes, e todas possuem relações materiais entre si.";
+            results.push_back(result);
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+            PatternIssue issue;
+            issue.patternName = "Relator Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+            issue.participants = result.participants;
+            issues.push_back(issue);
         }
-
-        results.push_back(result);
+        
     }
 }
 
