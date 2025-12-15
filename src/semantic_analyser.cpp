@@ -217,9 +217,13 @@ void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
 
         // não pode ter só uma fase
         if (phases.size() == 1) {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui apenas uma phase ('" + phases[0] + "'). O padrão Phase requer pelo menos duas phases e um genset.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Phase Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui apenas uma phase ('" + phases[0] + "'). O padrão Phase requer pelo menos duas phases";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
             continue;
         }
 
@@ -247,15 +251,29 @@ void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
         }
 
         if (foundGenset) {
-            result.status = "COMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
-                                 " phases agrupados corretamente no genset '" + gensetName + "' e retrição '" + gensetType + "'.";
+            if (gensetType.find("disjoint") != string::npos) {
+                result.status = "COMPLETE";
+                result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+                                     " phases agrupados corretamente no genset '" + gensetName + "' (com disjoint).";
+                results.push_back(result);
+            } else {
+                PatternIssue issue;
+                issue.patternName = "Phase Pattern";
+                issue.status = "Violação Temporal";
+                issue.issueDescription = "O genset '" + gensetName + "' que agrupa as phases da classe '" + parentName + "' deve possuir a restrição 'disjoint', obrigatória para o padrão Phase, pois cada phase representa um estado mutuamente exclusivo no tempo.";
+                issues.push_back(issue);
+            }
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+            PatternIssue issue;
+            issue.patternName = "Phase Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
                                  " phases, mas não há um 'genset' declarado (obrigatório para o padrão Phase).";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
         }
-        results.push_back(result);
+        
     }
 }
 
