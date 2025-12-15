@@ -10,6 +10,7 @@ void SemanticAnalyzer::analyze() {
         checkRolePattern(pkg);
         checkPhasePattern(pkg);
         checkRelatorPattern(pkg);
+        checkModePattern(pkg);
     }
 }
 
@@ -286,6 +287,57 @@ void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
         } else {
             result.status = "INCOMPLETE";
             result.description = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+        }
+
+        results.push_back(result);
+    }
+}
+
+void SemanticAnalyzer::checkModePattern(const Package& pkg) {
+    for (const auto& cls : pkg.classes) {
+        // Filtra apenas classes Mode
+        if (cls.stereotype != "mode") continue;
+
+        PatternResult result;
+        result.patternName = "Mode Pattern";
+        result.participants["mode"].push_back(cls.name);
+
+        bool hasCharacterization = false;
+        vector<string> characterizedClasses;
+        vector<string> dependencyClasses;
+
+        // Analisa as relações internas
+        for (const auto& rel : cls.relations) {
+            if (rel.stereotype == "characterization") {
+                hasCharacterization = true;
+                characterizedClasses.push_back(rel.otherClass);
+            } else if (rel.stereotype == "externalDependence") {
+                dependencyClasses.push_back(rel.otherClass);
+            } else {
+                // Caso existam outras relações (ex: derivation), também guardamos como dependência/outros
+                dependencyClasses.push_back(rel.otherClass);
+            }
+        }
+
+        result.participants["characterized"] = characterizedClasses;
+        result.participants["dependencies"] = dependencyClasses;
+
+        // Validação
+        if (hasCharacterization) {
+            result.status = "COMPLETE";
+            string desc = "O mode '" + cls.name + "' caracteriza a(s) classe(s): ";
+            for (size_t i = 0; i < characterizedClasses.size(); ++i) {
+                desc += (i > 0 ? ", " : "") + characterizedClasses[i];
+            }
+            desc += ".";
+            
+            if (!dependencyClasses.empty()) {
+                desc += " Também possui " + to_string(dependencyClasses.size()) + " dependência(s) externa(s).";
+            }
+            result.description = desc;
+        } else {
+            result.status = "INCOMPLETE";
+            result.description = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes).";
         }
 
         results.push_back(result);
