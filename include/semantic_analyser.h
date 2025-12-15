@@ -22,6 +22,7 @@ private:
 
     void checkSubkindPattern(const Package& pkg);
     void checkRolePattern(const Package& pkg);
+    void checkPhasePattern(const Package& pkg);
     
 public:
     SemanticAnalyzer(const SynthesisTable& table);

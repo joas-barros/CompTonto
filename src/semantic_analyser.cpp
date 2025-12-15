@@ -8,6 +8,7 @@ void SemanticAnalyzer::analyze() {
     for (const auto& pkg : packages) {
         checkSubkindPattern(pkg);
         checkRolePattern(pkg);
+        checkPhasePattern(pkg);
     }
 }
 
@@ -146,5 +147,71 @@ void SemanticAnalyzer::checkRolePattern(const Package& pkg) {
 
         results.push_back(result);
 
+    }
+}
+
+
+void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
+    map<string, vector<string>> parentToPhasesMap;
+
+    // Agrupar phases pelos seus pais
+    for (const auto& cls : pkg.classes) {
+        if (cls.stereotype == "phase") {
+            for (const auto& parentName : cls.parentClasses) {
+                parentToPhasesMap[parentName].push_back(cls.name);
+            }
+        }
+    }
+
+    // analisa cada agrupamento
+    for (const auto& entry : parentToPhasesMap) {
+        string parentName = entry.first;
+        vector<string> phases = entry.second;
+        PatternResult result;
+        result.patternName = "Phase Pattern";
+        result.participants["general"].push_back(parentName);
+        result.participants["phases"] = phases;
+
+        // não pode ter só uma fase
+        if (phases.size() == 1) {
+            result.status = "INCOMPLETE";
+            result.description = "A classe '" + parentName + "' possui apenas uma phase ('" + phases[0] + "'). O padrão Phase requer pelo menos duas phases e um genset.";
+            results.push_back(result);
+            continue;
+        }
+
+        // --- Verificar existência do Genset (Obrigatório) ---
+        bool foundGenset = false;
+        string gensetName = "";
+        string gensetType = "";
+
+        for (const auto& gen : pkg.generalizations) {
+            if (gen.parentClass == parentName) {
+                // Verifica interseção entre filhos do genset e roles encontrados
+                for (const auto& child : gen.childClasses) {
+                    for (const auto& r : phases) {
+                        if (child == r) {
+                            foundGenset = true;
+                            gensetName = gen.name;
+                            gensetType = gen.restrictions;
+                            break;
+                        }
+                    }
+                    if (foundGenset) break;
+                }
+            }
+            if (foundGenset) break;
+        }
+
+        if (foundGenset) {
+            result.status = "COMPLETE";
+            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+                                 " phases agrupados corretamente no genset '" + gensetName + "' e retrição '" + gensetType + "'.";
+        } else {
+            result.status = "INCOMPLETE";
+            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+                                 " phases, mas não há um 'genset' declarado (obrigatório para o padrão Phase).";
+        }
+        results.push_back(result);
     }
 }
