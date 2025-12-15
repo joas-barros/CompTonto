@@ -77,13 +77,14 @@ void SynthesisTable::addClassWithParents(const string& name, const string& stere
     }
 }
 
-void SynthesisTable::addAttribute(const string& name, const string& type, const string& meta) {
+void SynthesisTable::addAttribute(const string& name, const string& type, const string& meta, const int quantity) {
     // Cenário 1: Estamos dentro de uma CLASSE
     if (currentClass != nullptr) {
         Attribute attr;
         attr.name = name;
         attr.type = type;
         attr.metaattribute = meta;
+        attr.quantity = quantity;
         currentClass->attributes.push_back(attr);
         return;
     }

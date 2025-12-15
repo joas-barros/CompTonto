@@ -50,6 +50,7 @@ char* copyString(const char* s) {
 %type <sval> domain_classes
 %type <sval> generalization_restriction_keyword
 %type <sval> generalization_restrictions_opt
+%type <sval> attribute_quantity
 
 
 %token PALAVRA_RESERVADA
@@ -167,22 +168,37 @@ attribute_list:
     ;
 
 attribute_declaration:
-    NOME_DE_RELACAO COLON DADO_NATIVO {
-        synthesisTable.addAttribute($1, $3, "");
+    NOME_DE_RELACAO COLON DADO_NATIVO attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON NOVO_TIPO {
-        synthesisTable.addAttribute($1, $3, "");
+    NOME_DE_RELACAO COLON NOVO_TIPO attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        synthesisTable.addAttribute($1, $3, $5);
+    NOME_DE_RELACAO COLON NOME_DE_CLASSE attribute_quantity {
+        synthesisTable.addAttribute($1, $3, "", atoi($4));
     } |
 
-    NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS {
-        synthesisTable.addAttribute($1, $3, $5);
+    NOME_DE_RELACAO COLON DADO_NATIVO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
+    } |
+
+    NOME_DE_RELACAO COLON NOVO_TIPO LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
+    } |
+    
+    NOME_DE_RELACAO COLON NOME_DE_CLASSE LEFT_CURLY_BRACKETS META_ATRIBUTO RIGHT_CURLY_BRACKETS attribute_quantity {
+        synthesisTable.addAttribute($1, $3, $5, atoi($7));
     }
     ;
+
+attribute_quantity:
+    LEFT_SQUARE_BRACKETS NUMERO RIGHT_SQUARE_BRACKETS {
+        $$ = $2;
+    } | /* empty */ {
+       $$ = copyString("1");
+    };
 
 internal_relation_declaration:
     AT ESTERIOTIPO_RELACAO cardinality internal_relation_keyword cardinality NOME_DE_CLASSE {

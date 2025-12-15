@@ -216,7 +216,7 @@ void FileGenerator::generateSynthesisTableJson(const string& filename) {
             for (const auto& attr : cls.attributes) {
                 if (!firstAttr) fout << ",\n";
                 firstAttr = false;
-                fout << "              { \"name\": \"" << attr.name << "\", \"type\": \"" << attr.type << "\", \"metaattribute\": \"" << attr.metaattribute << "\" }";
+                fout << "              { \"name\": \"" << attr.name << "\", \"type\": \"" << attr.type << "\", \"metaattribute\": \"" << attr.metaattribute <<  "\", \"quantity\": " << attr.quantity << " }";
             }
             fout << "\n            ],\n";
 
