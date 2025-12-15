@@ -438,3 +438,46 @@ void FileGenerator::generateSemanticAnalysisReport(const string& filename) {
 
     cout << MAGENTA_TEXT << "Relatório de análise semântica gerado em " << filename << RESET_COLOR << endl;
 }
+
+void FileGenerator::generateSemanticIssuesReport(const string& filename) {
+    fout.open(filename);
+    if (!fout.is_open()) {
+        cerr << RED_TEXT << "Erro ao abrir o arquivo " << filename << " para escrita." << RESET_COLOR << endl;
+        return;
+    }
+
+    const auto& issues = semanticAnalyzer.getIssues();
+    if (issues.empty()) {
+        fout << "Nenhum problema semântico identificado! :)" << endl;
+    } else {
+
+        cerr << RED_TEXT << issues.size() << " problemas semânticos identificados durante a análise." << RESET_COLOR << endl;
+        cerr << RED_TEXT << "Relatório de problemas semânticos gerado em " << filename << RESET_COLOR << endl;
+        fout << "RELATÓRIO DE PROBLEMAS SEMÂNTICOS" << endl;
+        fout << "==========================" << endl;
+
+        fout << "\n";
+
+        for (const auto& issue : issues) {
+            fout << "Padrão: " << issue.patternName << endl;
+            fout << "Status: " << issue.status << endl;
+            fout << "Descrição do Problema: " << issue.issueDescription << endl;
+            fout << "Participantes:" << endl;
+            for (const auto& participant : issue.participants) {
+                fout << "  " << participant.first << ": ";
+                for (size_t i = 0; i < participant.second.size(); ++i) {
+                    if (i > 0) fout << ", ";
+                    fout << participant.second[i];
+                }
+                fout << endl;
+            }
+            fout << "--------------------------" << endl;
+            fout << "\n\n";
+        }
+
+        fout << "==========================" << endl;
+    }
+
+    fout.close();
+
+}

@@ -29,6 +29,7 @@ public:
     void generateSynthesisReport(const string& filename);
     void generateSynthesisStructureReport(const string& filename);
     void generateSemanticAnalysisReport(const string& filename);
+    void generateSemanticIssuesReport(const string& filename);
 };
 
 #endif // FILE_GENERATOR_H
