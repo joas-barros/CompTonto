@@ -21,11 +21,11 @@ private:
     vector<PatternResult> results;
 
     void checkSubkindPattern(const Package& pkg);
+    void checkRolePattern(const Package& pkg);
     
 public:
     SemanticAnalyzer(const SynthesisTable& table);
     void analyze();
-    void generateReport(const string& filename);
 
     // getter para os resultados
     const vector<PatternResult>& getPatterns() const { return results; }
