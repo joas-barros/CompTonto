@@ -9,6 +9,7 @@ void SemanticAnalyzer::analyze() {
         checkSubkindPattern(pkg);
         checkRolePattern(pkg);
         checkPhasePattern(pkg);
+        checkRelatorPattern(pkg);
     }
 }
 
@@ -212,6 +213,81 @@ void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
             result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
                                  " phases, mas não há um 'genset' declarado (obrigatório para o padrão Phase).";
         }
+        results.push_back(result);
+    }
+}
+
+void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
+    // Procurar as classes que são Relatores
+    for(const auto& cls : pkg.classes) {
+        if(cls.stereotype != "relator") continue;
+
+        PatternResult result;
+        result.patternName = "Relator Pattern";
+        result.participants["relator"].push_back(cls.name);
+
+        // Coletar os mediados (Targets das relações internas de mediação)
+        vector<string> mediatedClasses;
+
+        for (const auto& rel : cls.relations) {
+            if (rel.stereotype == "mediation") {
+                mediatedClasses.push_back(rel.otherClass);
+            }
+        }
+
+        result.participants["mediated"] = mediatedClasses;
+
+        if (mediatedClasses.size() < 2) {
+            result.status = "INCOMPLETE";
+            result.description = "O relator '" + cls.name + "' possui menos de 2 mediações (encontradas: " + to_string(mediatedClasses.size()) + ").";
+            results.push_back(result);
+            continue;
+        }
+
+        // Verificar relações materiais entre os pares de mediados
+        bool allPairsConnected = true;
+        string missingConnectionMsg = "";
+
+        // Loop duplo para verificar cada par único
+        for (size_t i = 0; i < mediatedClasses.size(); ++i) {
+            for (size_t j = i + 1; j < mediatedClasses.size(); ++j) {
+                string classA = mediatedClasses[i];
+                string classB = mediatedClasses[j];
+                
+                bool linkFound = false;
+
+                // Procura nas relações EXTERNAS do pacote
+                for (const auto& extRel : pkg.externalRelations) {
+                    if (extRel.stereotype == "material") {
+                        // Verifica conexão bidirecional (A->B ou B->A)
+                        bool matchDirect = (extRel.sourceClass == classA && extRel.targetClass == classB);
+                        bool matchInverse = (extRel.sourceClass == classB && extRel.targetClass == classA);
+                        
+                        if (matchDirect || matchInverse) {
+                            linkFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!linkFound) {
+                    allPairsConnected = false;
+                    missingConnectionMsg = "Falta relação @material entre '" + classA + "' e '" + classB + "'.";
+                    break; // Pode parar no primeiro erro ou continuar para listar todos
+                }
+            }
+            if (!allPairsConnected) break;
+        }
+
+        if (allPairsConnected) {
+            result.status = "COMPLETE";
+            result.description = "O relator '" + cls.name + "' media as classes " + 
+                                 to_string(mediatedClasses.size()) + " classes, e todas possuem relações materiais entre si.";
+        } else {
+            result.status = "INCOMPLETE";
+            result.description = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+        }
+
         results.push_back(result);
     }
 }
