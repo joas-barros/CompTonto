@@ -153,7 +153,7 @@ COMPTONTO
 ├── parser.tab.c             # Arquivo gerado pelo Bison
 ├── README.md                # Documentação principal do projeto
 └── teste.tonto              # Arquivo de teste da ontologia
-
+```
 
 ## Análise léxica:
 
