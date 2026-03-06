@@ -373,6 +373,13 @@ void generateLexicalReport() {
     fileGenerator.generateErrorReport("output/lexical/lexical_error_report.txt");
 }
 
+void generateSemanticReport() {
+    cout << MAGENTA_TEXT <<"Gerando relatórios da análise semântica..." << RESET_COLOR << endl;
+    semanticAnalyzer.analyze();
+    fileGenerator.generateSemanticAnalysisReport("output/semantic/semantic_analysis_report.txt");
+    fileGenerator.generateSemanticIssuesReport("output/semantic/semantic_issues_report.txt");
+}
+
 int yyreport_syntax_error(const yypcontext_t *ctx) {
     cerr << RED_TEXT << "Erro de Sintaxe na linha " << yylineno 
          << " coluna " << token_start_column << ":" << RESET_COLOR << endl;
@@ -446,8 +453,7 @@ int main(int argc, char** argv) {
         generateSyntacticalReport(); 
 
         cout << MAGENTA_TEXT << "\nIniciando Análise Semântica..." << RESET_COLOR << endl;
-        semanticAnalyzer.analyze();
-        fileGenerator.generateSemanticAnalysisReport("output/semantic/semantic_analysis_report.txt");
+        generateSemanticReport();
     } else {
         cout << RED_TEXT << "\n[FALHA] O arquivo '" << argv[1] << "' contém erros sintáticos e é INVÁLIDO." << RESET_COLOR << endl;
     }

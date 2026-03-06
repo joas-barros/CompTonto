@@ -39,8 +39,9 @@ public:
     SemanticAnalyzer(const SynthesisTable& table);
     void analyze();
 
-    // getter para os resultados
+    // Getters
     const vector<PatternResult>& getPatterns() const { return results; }
+    const vector<PatternIssue>& getIssues() const { return issues; }
 };
 
 #endif

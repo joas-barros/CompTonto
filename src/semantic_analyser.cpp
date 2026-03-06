@@ -217,9 +217,13 @@ void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
 
         // não pode ter só uma fase
         if (phases.size() == 1) {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui apenas uma phase ('" + phases[0] + "'). O padrão Phase requer pelo menos duas phases e um genset.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Phase Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui apenas uma phase ('" + phases[0] + "'). O padrão Phase requer pelo menos duas phases";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
             continue;
         }
 
@@ -247,15 +251,29 @@ void SemanticAnalyzer::checkPhasePattern(const Package& pkg) {
         }
 
         if (foundGenset) {
-            result.status = "COMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
-                                 " phases agrupados corretamente no genset '" + gensetName + "' e retrição '" + gensetType + "'.";
+            if (gensetType.find("disjoint") != string::npos) {
+                result.status = "COMPLETE";
+                result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+                                     " phases agrupados corretamente no genset '" + gensetName + "' (com disjoint).";
+                results.push_back(result);
+            } else {
+                PatternIssue issue;
+                issue.patternName = "Phase Pattern";
+                issue.status = "Violação Temporal";
+                issue.issueDescription = "O genset '" + gensetName + "' que agrupa as phases da classe '" + parentName + "' deve possuir a restrição 'disjoint', obrigatória para o padrão Phase, pois cada phase representa um estado mutuamente exclusivo no tempo.";
+                issues.push_back(issue);
+            }
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
+            PatternIssue issue;
+            issue.patternName = "Phase Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "A classe '" + parentName + "' possui " + to_string(phases.size()) + 
                                  " phases, mas não há um 'genset' declarado (obrigatório para o padrão Phase).";
+            issue.participants = result.participants;
+            
+            issues.push_back(issue);
         }
-        results.push_back(result);
+        
     }
 }
 
@@ -280,9 +298,11 @@ void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
         result.participants["mediated"] = mediatedClasses;
 
         if (mediatedClasses.size() < 2) {
-            result.status = "INCOMPLETE";
-            result.description = "O relator '" + cls.name + "' possui menos de 2 mediações (encontradas: " + to_string(mediatedClasses.size()) + ").";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Relator Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O relator '" + cls.name + "' possui menos de 2 mediações (encontradas: " + to_string(mediatedClasses.size()) + ").";
+            issues.push_back(issue);
             continue;
         }
 
@@ -325,12 +345,16 @@ void SemanticAnalyzer::checkRelatorPattern(const Package& pkg) {
             result.status = "COMPLETE";
             result.description = "O relator '" + cls.name + "' media as classes " + 
                                  to_string(mediatedClasses.size()) + " classes, e todas possuem relações materiais entre si.";
+            results.push_back(result);
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+            PatternIssue issue;
+            issue.patternName = "Relator Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O relator '" + cls.name + "' está incompleto. " + missingConnectionMsg;
+            issue.participants = result.participants;
+            issues.push_back(issue);
         }
-
-        results.push_back(result);
+        
     }
 }
 
@@ -376,12 +400,15 @@ void SemanticAnalyzer::checkModePattern(const Package& pkg) {
                 desc += " Também possui " + to_string(dependencyClasses.size()) + " dependência(s) externa(s).";
             }
             result.description = desc;
+            results.push_back(result);
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes).";
+            PatternIssue issue;
+            issue.patternName = "Mode Pattern";
+            issue.status = "Dependência Existencial";
+            issue.issueDescription = "A classe mode '" + cls.name + "' foi declarada, mas não possui uma relação interna de @characterization (obrigatória para modes, pois se trata de uma caracteristica intrínseca que necessita de uma relação de caracterização com outro conceito).";
+            issue.participants = result.participants;
+            issues.push_back(issue);
         }
-
-        results.push_back(result);
     }
 }
 
@@ -420,17 +447,23 @@ void SemanticAnalyzer::checkRoleMixinPattern(const Package& pkg) {
 
         // Validação 1: Quantidade de filhos
         if (specializedRoles.size() < 2) {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' possui menos de 2 especializações (encontradas: " + to_string(childrenClasses.size()) + "). Mixins devem abstrair propriedades de múltiplos tipos.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O roleMixin '" + parentName + "' possui menos de 2 especializações (encontradas: " + to_string(childrenClasses.size()) + "). Mixins devem abstrair propriedades de múltiplos tipos.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
             continue;
         }
 
         // Validação 2: Tipos dos filhos
         if (!allChildrenAreRoles) {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' possui filhos que não são 'role'. Pelo padrão definido, todos devem ser roles.";
-            results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Tipo Inválido de Especialização: Erro de Coersão";
+            issue.issueDescription = "O roleMixin '" + parentName + "' possui filhos que não são 'role'. Pelo padrão definido, é esperado que todos sejam roles.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
             continue;
         }
 
@@ -470,15 +503,22 @@ void SemanticAnalyzer::checkRoleMixinPattern(const Package& pkg) {
             if (isDisjoint) {
                 result.status = "COMPLETE";
                 result.description = "O roleMixin '" + parentName + "' é especializado por roles agrupados no genset disjoint '" + gensetName + "'.";
+                results.push_back(result);
             } else {
-                result.status = "INCOMPLETE";
-                result.description = "O genset '" + gensetName + "' foi encontrado, mas falta a restrição 'disjoint' obrigatória para RoleMixin.";
+                PatternIssue issue;
+                issue.patternName = "Role Mixin Pattern";
+                issue.status = "Abstração de Papéis";
+                issue.issueDescription = "O genset '" + gensetName + "' foi encontrado, mas falta a restrição 'disjoint' obrigatória para RoleMixin, garantindo que os papéis sejam mutuamente exclusivos.";
+                issue.participants = result.participants;
+                issues.push_back(issue);
             }
         } else {
-            result.status = "INCOMPLETE";
-            result.description = "O roleMixin '" + parentName + "' tem filhos, mas não há um 'genset' declarado.";
-        }
-
-        results.push_back(result);
+            PatternIssue issue;
+            issue.patternName = "Role Mixin Pattern";
+            issue.status = "Declaração Incompleta";
+            issue.issueDescription = "O roleMixin '" + parentName + "' tem filhos, mas não há um 'genset' declarado.";
+            issue.participants = result.participants;
+            issues.push_back(issue);
+        }    
     }
 }

@@ -79,7 +79,7 @@ nome_de_classe {upper}(({letter}|_)*({letter}|{digit})?)?
 
 nome_de_relacao {lower}(({letter}|_)*{letter}?)?
 
-instancias {letter}[a-zA-Z_]*{digit}{digit}
+instancias {letter}[a-zA-Z_-]*{digit}{digit}
 
 novos_tipos {letter}+DataType
 
